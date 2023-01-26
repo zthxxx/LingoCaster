@@ -29,6 +29,9 @@ module.exports = {
         maxBOF: 1,
       },
     ],
+    // https://eslint.org/docs/latest/rules/curly#multi-line
+    // https://github.com/antfu/eslint-config/blob/v0.37.0/packages/basic/index.js#L213
+    'curly': ['error', 'multi-line', 'consistent'],
     // https://eslint.org/docs/latest/rules/arrow-parens
     // https://github.com/antfu/eslint-config/blob/v0.37.0/packages/basic/index.js#L366
     'arrow-parens': 'off',
