@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# fade effect 0.3s between each pictures per 1.5s
 ffmpeg \
   -loop 1 -i metadata/lingo-caster-1.png \
   -loop 1 -i metadata/lingo-caster-2.png \

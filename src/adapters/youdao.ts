@@ -1,6 +1,8 @@
 import {
   sha256,
   nanoid,
+  detectLanguage,
+  Language,
 } from '../utils'
 import type { Adapter, Result } from './adapter'
 
@@ -53,10 +55,10 @@ export class Youdao implements Adapter {
   }
 
   url(input: string): string {
-    this.isChinese = this.detectChinese(input)
     this.word = input
-    const from = this.isChinese ? 'zh-CHS' : 'auto'
-    const to = this.isChinese ? 'en' : 'zh-CHS'
+    const from = detectLanguage(input)
+    this.isChinese = from === Language.ZH
+    const to = this.isChinese ? Language.EN : Language.ZH
     const timestamp = Math.round(new Date().getTime() / 1000).toString()
     const salt = Math.floor(Math.random() * 10000).toString()
 
@@ -86,8 +88,9 @@ export class Youdao implements Adapter {
   }
 
   parse(data: YoudaoAPIData): Result[] {
-    if (data.errorCode !== '0')
+    if (data.errorCode !== '0') {
       return this.parseError(data.errorCode)
+    }
 
     const { translation, basic, web } = data
 
@@ -156,14 +159,17 @@ export class Youdao implements Adapter {
   private parsePhonetic(basic: YoudaoAPIData['basic']): string {
     let phonetic: string = ''
 
-    if (this.isChinese && basic.phonetic)
+    if (this.isChinese && basic.phonetic) {
       phonetic = `[${basic.phonetic}] `
+    }
 
-    if (basic['us-phonetic'])
+    if (basic['us-phonetic']) {
       phonetic += ` [美: ${basic['us-phonetic']}] `
+    }
 
-    if (basic['uk-phonetic'])
+    if (basic['uk-phonetic']) {
       phonetic += ` [英: ${basic['uk-phonetic']}]`
+    }
 
     return phonetic
   }
@@ -203,9 +209,5 @@ export class Youdao implements Adapter {
       isPhonetic,
     })
     return this.results
-  }
-
-  private detectChinese(word: string): boolean {
-    return /^[\u4E00-\u9FA5]+$/.test(word)
   }
 }

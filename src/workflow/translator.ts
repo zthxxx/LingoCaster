@@ -8,6 +8,9 @@ import {
 import {
   toSpaceCase,
 } from '../utils'
+import {
+  HistoryManager,
+} from './history'
 
 interface TranslatorType {
   adapter: Adapter;
@@ -15,7 +18,8 @@ interface TranslatorType {
 }
 
 export class Translator implements TranslatorType {
-  adapter: Adapter
+  public adapter: Adapter
+  private _historyManager: HistoryManager | undefined
 
   constructor({ key, secret, platform }: {
     key: string;
@@ -31,10 +35,35 @@ export class Translator implements TranslatorType {
     // url
     const url = this.adapter.url(word)
     // fetch
-    const responseData = await got.get(url).json()
+    const responseData: unknown = await got.get(url).json()
     // parse
-    const result = this.adapter.parse(responseData)
+    const results = this.adapter.parse(responseData)
     // compose
-    return result
+    return results
+  }
+
+  public getHistory(): Result[] {
+    const queryItems = this.historyManager.getList()
+    return queryItems.map(item => item.result)
+  }
+
+  public updateHistoryItem(query: string, result?: Result): void {
+    if (!result) return
+
+    this.historyManager.upsert({
+      query,
+      result: {
+        ...result,
+        clipboard: query,
+      },
+      updateTime: new Date().toISOString(),
+    })
+  }
+
+  public get historyManager(): HistoryManager {
+    if (!this._historyManager) {
+      this._historyManager = new HistoryManager()
+    }
+    return this._historyManager
   }
 }

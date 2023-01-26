@@ -1,5 +1,6 @@
 export * from './crypto'
 export * from './dotenv'
 export * from './format'
-export * from './speak'
 export * from './nanoid'
+export * from './languages'
+export * from './cache'

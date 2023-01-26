@@ -68,29 +68,36 @@ export const View = memo((props: LaunchProps<{ arguments: TranslateParams }>) =>
     initInput: queryText,
     pipeline: inputText$ => inputText$.pipe(
       debounceTime(300),
-      map(text => text.trim()),
+      map(text => text.trim().substring(0, 2000)),
+      distinctUntilChanged(),
       tap(text => {
         if (text) setLoading(true)
       }),
       switchMap(async text => {
-        if (!text) return []
-        return translator.translate(text)
+        if (!text) return { query: '', results: [] }
+        return {
+          query: text,
+          results: (text === '*')
+            ? translator.getHistory()
+            : await translator.translate(text),
+        }
       }),
-      tap(results => {
+      tap(({ results }) => {
         setResults(results)
         setLoading(false)
+      }),
+      // update history
+      debounceTime(1500),
+      tap(({ query, results }) => {
+        if (query && query !== '*') {
+          translator.updateHistoryItem(query, results[0])
+        }
       }),
     ),
   })
 
-
   const itemsMap = useMemo(
-    () => new Map(results.map(
-      (item, index) => [
-        `${item.title}-${index}`,
-        item,
-      ],
-    )),
+    () => new Map(results.map(item => [item.id, item])),
     [results],
   )
 
@@ -99,7 +106,7 @@ export const View = memo((props: LaunchProps<{ arguments: TranslateParams }>) =>
       isLoading={loading}
       searchText={inputText$.value}
       searchBarPlaceholder='Search for translate ...'
-      isShowingDetail={showingDetail.value}
+      isShowingDetail={showingDetail.value && !!results.length}
       onSearchTextChange={inputText$.next}
       onSelectionChange={id => {
         const item = itemsMap.get(id!)
@@ -111,8 +118,10 @@ export const View = memo((props: LaunchProps<{ arguments: TranslateParams }>) =>
       <ViewResults results={results} />
       <List.EmptyView
         title={
-          inputText$.value
-            ? 'Loading from translate ...'
+          inputText$.value.trim()
+            ? loading
+              ? 'Loading from translate ...'
+              : 'No results found'
             : 'Type words or sentences to translate'
         }
       />
@@ -120,7 +129,7 @@ export const View = memo((props: LaunchProps<{ arguments: TranslateParams }>) =>
   )
 })
 
-const maxLineChars = 90
+const maxLineChars = 88
 
 const useInputText$ = ({ initInput, pipeline }: {
   initInput?: string;
@@ -174,10 +183,10 @@ const ViewResults = memo((props: ViewResultsProps) => {
 
   return (
     <>
-      {results.map((item, index) => (
+      {results.map((item) => (
         <List.Item
-          key={`${item.title}-${index}`}
-          id={`${item.title}-${index}`}
+          key={item.id}
+          id={item.id}
           icon={
             item.isPhonetic
               ? 'translate-say.png'

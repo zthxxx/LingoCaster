@@ -28,10 +28,10 @@
 - 查询结构中的音标项上 `Enter(↩︎)` => 本地语音发音
 - 对 `CamelCase` / `snake_case` / `kebab-case` 自动切分后翻译
 - 长句结果自动展开详情显示
+- 输入 `*` 将展示历史查询记录
 
 
 ## Credits
 
 - [Alfred YoudaoTranslator](https://github.com/wensonsmith/YoudaoTranslator)
-- [Raycast Easy Dictionary
-](https://github.com/tisfeng/Raycast-Easydict)
+- [Raycast Easy Dictionary](https://github.com/tisfeng/Raycast-Easydict)

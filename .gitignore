@@ -11,3 +11,5 @@
 .*.ts
 .*.mts
 *.log
+
+raycast-env.d.ts
