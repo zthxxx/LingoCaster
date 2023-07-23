@@ -55,6 +55,8 @@ export class Translator implements TranslatorType {
       result: {
         ...result,
         clipboard: query,
+        title: query,
+        subtitle: `${result.title} (${result.subtitle})`,
       },
       updateTime: new Date().toISOString(),
     })
