@@ -1,15 +1,44 @@
-import { useEffect, useState } from 'react'
 import {
-  List,
-  type LaunchProps,
+  memo,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import {
   getSelectedText,
   Clipboard,
+  getPreferenceValues,
 } from '@raycast/api'
-import { View } from './translate'
+import {
+  type AdapterPlatform,
+} from './adapters'
+import {
+  Translator,
+} from './workflow'
+import { TranslateView } from './components'
 
 
-export const ViewWithSection = (props: LaunchProps) => {
-  const [selected, setSelected] = useState<string | null>(null)
+interface Preferences {
+  APP_KEY: string;
+  APP_SECRET: string;
+  APP_PLATFORM: AdapterPlatform;
+}
+
+export const ViewWithSection = memo(() => {
+  const [selected, setSelected] = useState<string | undefined>(undefined)
+
+  const {
+    APP_KEY,
+    APP_SECRET,
+    APP_PLATFORM,
+  } = useMemo(() => getPreferenceValues<Preferences>(), [])
+
+  const translator = useMemo(() => new Translator({
+    key: APP_KEY,
+    secret: APP_SECRET,
+    platform: APP_PLATFORM,
+  }), [])
+
 
   useEffect(() => {
     getSelectedText()
@@ -20,25 +49,12 @@ export const ViewWithSection = (props: LaunchProps) => {
       })
   }, [])
 
-  if (selected === null) {
-    return (
-      <List
-        searchBarPlaceholder=''
-        isLoading
-      >
-        <List.EmptyView
-          title='Loading from selection or clipboard...'
-        />
-      </List>
-    )
-  }
-
   return (
-    <View
-      {...props}
-      arguments={{ queryText: selected }}
+    <TranslateView
+      selected={selected}
+      translator={translator}
     />
   )
-}
+})
 
 export default ViewWithSection

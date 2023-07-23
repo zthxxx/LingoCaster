@@ -4,9 +4,12 @@
   "display": "Node 16",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "es",
+    "outDir": "dist",
     "baseUrl": ".",
-    "target": "es2021",
+    "target": "ES2022",
+
+    "moduleResolution": "Node",
+    "resolvePackageJsonExports": false,
 
     "types": [
       "node",
