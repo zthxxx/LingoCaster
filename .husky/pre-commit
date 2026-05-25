@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# bash strict mode (https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425)
+# https://www.explainshell.com/explain/1posix/set
+set -euxo pipefail
+
+npm run typecheck
+npm run lint
+npm run test

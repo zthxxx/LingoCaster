@@ -32,7 +32,8 @@ const mockHistoryManager: HistoryManager = {} as HistoryManager
       item.id = ''
     })
 
-    expect(results.length).toBeGreaterThan(5)
+    // translate api 仅返回 翻译 而非 词典，因此只有一条
+    expect(results.length).toBe(1)
     expect(results[0]).toEqual({
       id: '',
       title: '词',
@@ -41,15 +42,6 @@ const mockHistoryManager: HistoryManager = {} as HistoryManager
       pronounce: 'word',
       quicklookUrl: 'https://www.youdao.com/w/word',
       isPhonetic: false,
-    })
-    expect(results[5]).toEqual({
-      id: '',
-      title: ' [美: wɜːrd]  [英: wɜːd]',
-      subtitle: '回车可听发音',
-      clipboard: 'word',
-      pronounce: 'word',
-      quicklookUrl: 'https://www.youdao.com/w/word',
-      isPhonetic: true,
     })
   })
 })

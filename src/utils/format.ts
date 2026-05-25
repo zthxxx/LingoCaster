@@ -11,7 +11,6 @@ import { noCase } from 'change-case'
  *   but not between the numbers or other symbols
  */
 export const toSpaceCase = (text: string): string => {
-  /* eslint-disable @typescript-eslint/indent */
   const stripRegexp = SuperExpressive()
     .allowMultipleMatches
     .anyOf
@@ -44,7 +43,6 @@ export const toSpaceCase = (text: string): string => {
       .end()
     .end()
     .toRegex()
-  /* eslint-enable @typescript-eslint/indent */
 
   const result = noCase(
     text,

@@ -23,5 +23,6 @@ export interface Adapter {
 
   url: (word: string) => string;
 
-  parse: (response: any) => Result[];
+  /** declared as a method so each adapter can narrow `response` to its own payload type */
+  parse(response: unknown): Result[];
 }

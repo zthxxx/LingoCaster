@@ -22,9 +22,7 @@ import {
 
 const actionContext = createContext<{
   item: Result;
-}>({
-  item: null as any as Result,
-})
+}>({} as { item: Result })
 
 export const ActionContextPanel = memo((props: {
   item: Result;

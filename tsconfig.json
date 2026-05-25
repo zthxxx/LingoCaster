@@ -2,16 +2,18 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@zthxxx/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
-    "target": "ES2025",
-
-    "moduleResolution": "Bundler",
-    "resolvePackageJsonExports": false,
+    "rootDir": ".",
+    "target": "esnext",
+    "module": "ESNext",
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": false,
+    // https://www.typescriptlang.org/tsconfig/#moduleResolution
+    "moduleResolution": "bundler",
 
     "types": [
       "node",
-      "jest",
+      "vitest/globals",
     ],
   },
   "include": [

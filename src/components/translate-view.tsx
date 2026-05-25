@@ -114,7 +114,7 @@ const maxLineChars = 88
 
 const useInputText$ = ({ initInput, pipeline }: {
   initInput?: string;
-  pipeline: (inputText$: Observable<string>) => Observable<any>;
+  pipeline: (inputText$: Observable<string>) => Observable<unknown>;
 }): BehaviorSubject<string> & { next: (params: string) => void } => {
   const [, setInputText] = useState('')
   const inputText$ = useMemo(

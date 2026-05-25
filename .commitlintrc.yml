@@ -1,0 +1,76 @@
+# Git Commit Message Convention
+# - follow: https://github.com/vuejs/vue/blob/dev/.github/COMMIT_CONVENTION.md
+# - tool:   https://commitlint.js.org/#/concepts-commit-conventions
+#
+#  ```
+#  <type>(<scope?>): <subject>
+#  <BLANK LINE>
+#  <body?>
+#  <BLANK LINE>
+#  <footer?>
+#  ```
+extends:
+  # https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional
+  - '@commitlint/config-conventional'
+
+# # https://commitlint.js.org/#/reference-rules
+rules:
+  # https://commitlint.js.org/reference/rules.html#type-enum
+  type-enum:
+    - 2 # error
+    - always
+    - - build
+      - chore
+      - ci
+      - docs
+      - feat
+      - fix
+      - perf
+      - refactor
+      - revert
+      - style
+      - test
+      - polish
+      - hotfix
+      - lint
+
+  # https://commitlint.js.org/reference/rules.html#scope-case
+  scope-case:
+    - 2 # error
+    - always
+    - - lower-case
+      - upper-case
+      - kebab-case
+      - pascal-case
+      - start-case
+
+  # https://commitlint.js.org/reference/rules.html#subject-case
+  subject-case:
+    - 1 # warning
+    - always
+    - - lower-case
+      - camel-case
+      - kebab-case
+      - pascal-case
+      - sentence-case
+      - start-case
+
+  # https://commitlint.js.org/reference/rules.html#header-max-length
+  header-max-length:
+    - 2 # error
+    - always
+    - 120
+
+  # https://commitlint.js.org/reference/rules.html#footer-leading-blank
+  footer-leading-blank:
+    - 2 # error
+    - always
+
+  # https://commitlint.js.org/reference/rules.html#body-leading-blank
+  body-leading-blank:
+    - 2 # error
+    - always
+
+  # https://commitlint.js.org/reference/rules.html#body-max-line-length
+  body-max-line-length:
+    - 0
