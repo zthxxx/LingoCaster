@@ -1,14 +1,12 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@zthxxx/tsconfig/tsconfig.json",
-  "display": "Node 16",
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "baseUrl": ".",
-    "target": "ES2022",
+    "target": "ES2025",
 
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolvePackageJsonExports": false,
 
     "types": [

@@ -3,6 +3,7 @@ import {
   type AdapterPlatform,
 } from '../adapters'
 import { Translator } from './translator'
+import type { HistoryManager } from './history'
 
 parseDotenv()
 
@@ -12,6 +13,7 @@ const {
   APP_PLATFORM,
 } = process.env;
 
+const mockHistoryManager: HistoryManager = {} as HistoryManager
 
 ((APP_KEY && APP_SECRET && APP_PLATFORM)
   ? describe
@@ -22,6 +24,7 @@ const {
       key: APP_KEY!,
       secret: APP_SECRET!,
       platform: APP_PLATFORM as AdapterPlatform,
+      historyManager: mockHistoryManager,
     })
 
     const results = await translator.translate('word')

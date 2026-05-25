@@ -10,6 +10,7 @@ import {
 } from './adapters'
 import {
   Translator,
+  HistoryManager,
 } from './workflow'
 import { TranslateView } from './components'
 
@@ -30,6 +31,7 @@ export const View = memo(() => {
     key: APP_KEY,
     secret: APP_SECRET,
     platform: APP_PLATFORM,
+    historyManager: new HistoryManager(),
   }), [])
 
   return (

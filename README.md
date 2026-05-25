@@ -31,6 +31,56 @@
 - 输入 `*` 将展示历史查询记录
 
 
+## Development 开发安装
+
+以开发模式将插件安装到本地 Raycast，支持热重载，适合二次开发或在插件上架前抢先体验。
+
+### 前置依赖
+
+- macOS 上已安装 [Raycast](https://www.raycast.com)，并登录 Raycast 账号（首次运行开发模式会引导登录 / 开启 Developer Mode）
+- [Node.js](https://nodejs.org) ≥ 20
+- [pnpm](https://pnpm.io)（本仓库使用 pnpm 管理依赖）
+
+### 安装步骤
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/zthxxx/LingoCaster.git
+cd LingoCaster
+
+# 2. 安装依赖
+pnpm install --frozen-lockfile
+
+# 3. 启动开发模式（内部执行 `ray develop`）
+pnpm dev
+```
+
+`pnpm dev` 会构建插件并导入到 Raycast，保持终端运行即为热重载状态，改动源码会自动刷新。此时唤起 Raycast 即可看到 `Translate` 与 `Translate with Select` 两个命令。按 `Ctrl + C` 结束开发模式。
+
+### 配置 API 密钥
+
+首次运行命令时，Raycast 会要求填写插件偏好设置（Preferences）：
+
+| 偏好项 | 说明 |
+| --- | --- |
+| Translator Platform App | 翻译平台，默认 `Youdao` |
+| App Auth Key | 有道智云应用的 `APP_KEY` |
+| App Secret Key | 有道智云应用的 `APP_SECRET` |
+
+`APP_KEY` / `APP_SECRET` 需到 [有道智云](https://ai.youdao.com) 注册应用（自然语言翻译服务）后获取。
+
+### 其他脚本
+
+```bash
+pnpm build      # 构建产物到 dist
+pnpm lint       # 代码检查（lint:fix 自动修复）
+pnpm test       # 运行单元测试
+```
+
+> 运行 `pnpm test` 中的有道翻译联网集成测试时，密钥从 `.env.local` 读取（而非 Raycast 偏好设置），缺失时该用例自动跳过。
+> 可复制 `.env.local.template` 为 `.env.local` 并填入 `APP_KEY` / `APP_SECRET`。
+
+
 ## Credits
 
 - [Alfred YoudaoTranslator](https://github.com/wensonsmith/YoudaoTranslator)

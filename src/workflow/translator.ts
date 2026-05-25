@@ -8,7 +8,7 @@ import {
 import {
   toSpaceCase,
 } from '../utils'
-import {
+import type {
   HistoryManager,
 } from './history'
 
@@ -19,14 +19,16 @@ interface TranslatorType {
 
 export class Translator implements TranslatorType {
   public adapter: Adapter
-  private _historyManager: HistoryManager | undefined
+  private historyManager: HistoryManager
 
-  constructor({ key, secret, platform }: {
+  constructor({ key, secret, platform, historyManager }: {
     key: string;
     secret: string;
     platform: AdapterPlatform;
+    historyManager: HistoryManager;
   }) {
     this.adapter = new adapters[platform](key, secret)
+    this.historyManager = historyManager
   }
 
   public async translate(query: string): Promise<Result[]> {
@@ -60,12 +62,5 @@ export class Translator implements TranslatorType {
       },
       updateTime: new Date().toISOString(),
     })
-  }
-
-  public get historyManager(): HistoryManager {
-    if (!this._historyManager) {
-      this._historyManager = new HistoryManager()
-    }
-    return this._historyManager
   }
 }
