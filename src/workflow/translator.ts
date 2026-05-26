@@ -53,7 +53,7 @@ export class Translator implements TranslatorType {
     // fetch translate (headline) and dict (word-level detail) in parallel
     const [translateResults, dictResults] = await Promise.all([
       this.runSource(this.adapter, word),
-      this.runDict(word),
+      this.runDict(word, query),
     ])
     // compose: translation first, dict detail appended
     return [...translateResults, ...dictResults]
@@ -66,8 +66,10 @@ export class Translator implements TranslatorType {
   }
 
   /** dict is best-effort: an unofficial-endpoint failure must not break translation. */
-  private async runDict(word: string): Promise<Result[]> {
-    if (!this.dictAdapter || word.length > MAX_DICT_INPUT_LENGTH) {
+  private async runDict(word: string, query: string): Promise<Result[]> {
+    // gate on the RAW query length — toSpaceCase expands camelCase and would
+    // otherwise skip dict for a single long identifier the user wants defined
+    if (!this.dictAdapter || query.trim().length > MAX_DICT_INPUT_LENGTH) {
       return []
     }
     try {
@@ -83,7 +85,8 @@ export class Translator implements TranslatorType {
   }
 
   public updateHistoryItem(query: string, result?: Result): void {
-    if (!result) return
+    // never persist the translate error row as a history entry
+    if (!result || result.isError) return
 
     this.historyManager.upsert({
       query,

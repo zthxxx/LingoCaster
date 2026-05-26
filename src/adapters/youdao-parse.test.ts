@@ -42,7 +42,7 @@ describe('makeResult', () => {
 
 describe('parseTranslation', () => {
   test('property: non-empty translation -> exactly one row, pronounce follows direction', () => {
-    fc.assert(fc.property(ctxArb, fc.array(fc.string(), { minLength: 1 }), (ctx, translation) => {
+    fc.assert(fc.property(ctxArb, fc.array(fc.string({ minLength: 1 }), { minLength: 1 }), (ctx, translation) => {
       const results = parseTranslation(translation, ctx)
       expect(results).toHaveLength(1)
       expect(results[0].title).toBe(translation[0])
@@ -53,8 +53,11 @@ describe('parseTranslation', () => {
     }))
   })
 
-  test('undefined translation -> []', () => {
-    expect(parseTranslation(undefined as unknown as string[], { word: 'x', isChinese: false })).toEqual([])
+  test('undefined / empty-array / empty-string translation -> []', () => {
+    const ctx = { word: 'x', isChinese: false }
+    expect(parseTranslation(undefined as unknown as string[], ctx)).toEqual([])
+    expect(parseTranslation([], ctx)).toEqual([])
+    expect(parseTranslation([''], ctx)).toEqual([])
   })
 
   test('golden: word -> 词 (mirrors existing integration expectation)', () => {
@@ -109,6 +112,23 @@ describe('parseBasic', () => {
     expect(last.pronounce).toBe('good')
   })
 
+  test('phonetic row pronounces the head word, not the loop-leftover last explain (zh->en)', () => {
+    const basic: YoudaoAPIData['basic'] = { 'phonetic': 'měi', 'us-phonetic': '', 'uk-phonetic': '', 'explains': ['beauty', 'prettily'] }
+    const [, , phonetic] = parseBasic(basic, { word: '美', isChinese: true })
+    expect(phonetic.isPhonetic).toBe(true)
+    // first English head word, never the last ('prettily')
+    expect(phonetic.pronounce).toBe('beauty')
+    expect(phonetic.clipboard).toBe('beauty')
+  })
+
+  test('phonetic row falls back to the queried word when explains is empty (not empty string)', () => {
+    const basic: YoudaoAPIData['basic'] = { 'phonetic': 'ɡʊd', 'us-phonetic': 'ɡʊd', 'uk-phonetic': '', 'explains': [] }
+    const [phonetic] = parseBasic(basic, { word: 'good', isChinese: false })
+    expect(phonetic.isPhonetic).toBe(true)
+    expect(phonetic.pronounce).toBe('good')
+    expect(phonetic.clipboard).toBe('good')
+  })
+
   test('undefined basic -> []', () => {
     expect(parseBasic(undefined as unknown as YoudaoAPIData['basic'], { word: 'x', isChinese: false })).toEqual([])
   })
@@ -159,6 +179,16 @@ describe('parseWeb', () => {
   test('undefined web -> []', () => {
     expect(parseWeb(undefined as unknown as YoudaoAPIData['web'], { word: 'x', isChinese: false })).toEqual([])
   })
+
+  test('drops entries with an empty value array', () => {
+    const web: YoudaoAPIData['web'] = [
+      { key: 'k1', value: [] },
+      { key: 'k2', value: ['v'] },
+    ]
+    const results = parseWeb(web, { word: 'x', isChinese: false })
+    expect(results).toHaveLength(1)
+    expect(results[0].subtitle).toBe('k2')
+  })
 })
 
 describe('parseError', () => {
@@ -176,5 +206,10 @@ describe('parseError', () => {
   test('unknown code falls back to generic message', () => {
     const [result] = parseError('999', { word: 'x', isChinese: false })
     expect(result.subtitle).toBe('请参考错误码: 999')
+  })
+
+  test('error rows are flagged isError (so history can skip them)', () => {
+    const [result] = parseError('108', { word: 'x', isChinese: false })
+    expect(result.isError).toBe(true)
   })
 })

@@ -45,12 +45,14 @@ export function makeResult(ctx: ParseContext, {
   clipboard = '',
   pronounce = '',
   isPhonetic = false,
+  isError = false,
 }: {
   title: string;
   subtitle: string;
   clipboard?: string;
   pronounce?: string;
   isPhonetic?: boolean;
+  isError?: boolean;
 }): Result {
   return {
     id: nanoid(),
@@ -60,29 +62,30 @@ export function makeResult(ctx: ParseContext, {
     pronounce,
     quicklookUrl: `https://www.youdao.com/w/${ctx.word}`,
     isPhonetic,
+    // only attach the flag when set, so normal results stay shape-identical
+    ...(isError ? { isError: true } : {}),
   }
 }
 
 export function parseTranslation(translation: string[], ctx: ParseContext): Result[] {
-  if (translation) {
-    const pronounce = ctx.isChinese ? translation[0] : ctx.word
-    return [makeResult(ctx, {
-      title: translation[0],
-      subtitle: ctx.word,
-      clipboard: translation[0],
-      pronounce,
-    })]
-  }
-  return []
+  const headline = translation?.[0]
+  if (!headline) return []
+
+  const pronounce = ctx.isChinese ? headline : ctx.word
+  return [makeResult(ctx, {
+    title: headline,
+    subtitle: ctx.word,
+    clipboard: headline,
+    pronounce,
+  })]
 }
 
 export function parseBasic(basic: YoudaoAPIData['basic'], ctx: ParseContext): Result[] {
   if (!basic) return []
 
   const results: Result[] = []
-  let pronounce: string = ''
   basic.explains.forEach((explain) => {
-    pronounce = ctx.isChinese ? explain : ctx.word
+    const pronounce = ctx.isChinese ? explain : ctx.word
     results.push(makeResult(ctx, {
       title: explain,
       subtitle: ctx.word,
@@ -92,13 +95,15 @@ export function parseBasic(basic: YoudaoAPIData['basic'], ctx: ParseContext): Re
   })
 
   if (basic.phonetic) {
-    // 获取音标，同时确定要发音的单词
     const phonetic: string = parsePhonetic(basic, ctx)
+    // pronounce the head word: the English result for zh->en, otherwise the queried word.
+    // (must not reuse a per-explain pronounce, which would leak the last/empty value)
+    const headWord = ctx.isChinese ? (basic.explains[0] ?? ctx.word) : ctx.word
     results.push(makeResult(ctx, {
       title: phonetic,
       subtitle: '回车可听发音',
-      clipboard: pronounce,
-      pronounce,
+      clipboard: headWord,
+      pronounce: headWord,
       isPhonetic: true,
     }))
   }
@@ -109,15 +114,17 @@ export function parseBasic(basic: YoudaoAPIData['basic'], ctx: ParseContext): Re
 export function parseWeb(web: YoudaoAPIData['web'], ctx: ParseContext): Result[] {
   if (!web) return []
 
-  return web.map((item) => {
-    const pronounce = ctx.isChinese ? item.value[0] : item.key
-    return makeResult(ctx, {
-      title: item.value.join(', '),
-      subtitle: item.key,
-      clipboard: item.value[0],
-      pronounce,
+  return web
+    .filter(item => item.value?.length)
+    .map((item) => {
+      const pronounce = ctx.isChinese ? item.value[0] : item.key
+      return makeResult(ctx, {
+        title: item.value.join(', '),
+        subtitle: item.key,
+        clipboard: item.value[0],
+        pronounce,
+      })
     })
-  })
 }
 
 export function parsePhonetic(basic: YoudaoAPIData['basic'], ctx: ParseContext): string {
@@ -145,5 +152,6 @@ export function parseError(code: string, ctx: ParseContext): Result[] {
     title: '👻 翻译出错啦',
     subtitle: message,
     clipboard: 'Ooops...',
+    isError: true,
   })]
 }

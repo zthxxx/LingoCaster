@@ -87,3 +87,23 @@ describe('HistoryManager (injected MemoryStorage)', () => {
     ))
   })
 })
+
+describe('HistoryManager corrupt-cache resilience', () => {
+  test('init does not throw on corrupt metadata and falls back to empty', () => {
+    const metadataStorage = new MemoryStorage()
+    metadataStorage.set('metadata', 'not valid json{{{')
+    expect(() => new HistoryManager({ itemsStorage: new MemoryStorage(), metadataStorage })).not.toThrow()
+    const hm = new HistoryManager({ itemsStorage: new MemoryStorage(), metadataStorage })
+    expect(hm.getList()).toEqual([])
+  })
+
+  test('getList skips a corrupt item entry without throwing', () => {
+    const itemsStorage = new MemoryStorage()
+    const metadataStorage = new MemoryStorage()
+    metadataStorage.set('metadata', JSON.stringify({ list: ['good', 'bad'] }))
+    itemsStorage.set('good', JSON.stringify(itemOf('good')))
+    itemsStorage.set('bad', 'corrupt}{')
+    const hm = new HistoryManager({ itemsStorage, metadataStorage })
+    expect(hm.getList().map(i => i.query)).toEqual(['good'])
+  })
+})

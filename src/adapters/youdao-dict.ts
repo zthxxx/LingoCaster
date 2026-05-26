@@ -83,14 +83,15 @@ export function mapToBasicWeb(model: YoudaoWebDictionaryModel): {
   }
 
   const web: YoudaoAPIData['web'] = asArray<WebTranslation>(model?.web_trans?.['web-translation'])
-    .slice(0, MAX_WEB_RESULTS)
     .map(entry => ({
       key: entry?.key,
       value: asArray<{ value?: string }>(entry?.trans)
         .map(trans => trans?.value ?? '')
         .filter(value => value.length > 0),
     }))
-    .filter(item => item.value.length > 0)
+    // drop entries without a key or values BEFORE capping, so the cap counts only real rows
+    .filter((item): item is { key: string; value: string[] } => Boolean(item.key) && item.value.length > 0)
+    .slice(0, MAX_WEB_RESULTS)
 
   return { basic, web }
 }
@@ -103,11 +104,8 @@ export function mapToBasicWeb(model: YoudaoWebDictionaryModel): {
 export class YoudaoDict implements Adapter {
   word: string = ''
 
-  isChinese: boolean = false
-
   url(input: string): string {
     this.word = input
-    this.isChinese = detectLanguage(input) === Language.ZH
     const params = new URLSearchParams({
       q: input,
       le: dictLanguageCode(input),
@@ -117,11 +115,17 @@ export class YoudaoDict implements Adapter {
   }
 
   parse(data: YoudaoWebDictionaryModel): Result[] {
+    const ecWord = data?.ec?.word?.[0]
+    const ceWord = data?.ce?.word?.[0]
     // only words carry dict entries; sentences (no ec/ce) contribute nothing
-    const isWord = Boolean(data?.ec?.word?.[0] || data?.ce?.word?.[0])
-    if (!isWord) return []
+    if (!ecWord && !ceWord) return []
 
-    const ctx: ParseContext = { word: this.word, isChinese: this.isChinese }
+    // Direction comes from the response, not from input language detection:
+    // a `ce` (Chinese->English) node means the query was Chinese, so pronounce/
+    // phonetic follow zh->en. This avoids detectLanguage misclassifying Chinese
+    // inputs that contain digits/punctuation/spaces.
+    const isChinese = Boolean(ceWord) && !ecWord
+    const ctx: ParseContext = { word: this.word, isChinese }
     const { basic, web } = mapToBasicWeb(data)
     return [
       ...(basic ? parseBasic(basic, ctx) : []),

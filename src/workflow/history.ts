@@ -45,6 +45,17 @@ interface HistoryMetadata {
 
 const metadataKey = 'metadata'
 
+/** Never throw on a corrupt / legacy / partially-written cache value. */
+const safeParse = <T>(raw: string | undefined, fallback: T): T => {
+  if (!raw) return fallback
+  try {
+    return JSON.parse(raw) as T
+  }
+  catch {
+    return fallback
+  }
+}
+
 export class HistoryManager {
   private maxSize: number
   private itemsStorage: KVStorage
@@ -63,27 +74,19 @@ export class HistoryManager {
   }
 
   init() {
-    const data = this.metadataStorage.get(metadataKey)
-    const metadata: HistoryMetadata = data
-      ? JSON.parse(data) as HistoryMetadata
-      : { list: [] }
+    const metadata = safeParse<Partial<HistoryMetadata>>(this.metadataStorage.get(metadataKey), { list: [] })
+    const list = Array.isArray(metadata.list) ? metadata.list : []
 
     this.cache = LRUCache.from({
-      list: metadata.list,
+      list,
       capacity: this.maxSize,
     })
   }
 
   getList(): QueryItem[] {
-    const queryList = this.cache.getList()
-    return queryList
-      .map(query => {
-        const itemData = this.itemsStorage.get(query)
-        return itemData
-          ? JSON.parse(itemData) as QueryItem
-          : null
-      })
-      .filter(item => item) as QueryItem[]
+    return this.cache.getList()
+      .map(query => safeParse<QueryItem | null>(this.itemsStorage.get(query), null))
+      .filter((item): item is QueryItem => item !== null)
   }
 
   upsert(queryItem: QueryItem) {

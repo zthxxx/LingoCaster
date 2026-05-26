@@ -6,10 +6,8 @@ import {
 import type { Adapter, Result } from './adapter'
 import {
   type YoudaoAPIData,
-  parseBasic,
   parseError,
   parseTranslation,
-  parseWeb,
 } from './youdao-parse'
 
 export type { YoudaoAPIData } from './youdao-parse'
@@ -68,12 +66,10 @@ export class Youdao implements Adapter {
       return parseError(data.errorCode, ctx)
     }
 
-    const { translation, basic, web } = data
-
-    return [
-      ...parseTranslation(translation, ctx),
-      ...parseBasic(basic, ctx),
-      ...parseWeb(web, ctx),
-    ]
+    // Only the headline translation comes from the (signed) text API; word-level
+    // dict detail (basic/web) is owned by the parallel YoudaoDict adapter, so we
+    // intentionally do not parse basic/web here — avoids duplicate rows if the
+    // openapi endpoint ever returns them again.
+    return parseTranslation(data.translation, ctx)
   }
 }

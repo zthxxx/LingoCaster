@@ -81,6 +81,39 @@ describe('mapToBasicWeb', () => {
   test('non-word model (no ec/ce) -> null basic', () => {
     expect(mapToBasicWeb({ input: 'hello world' }).basic).toBeNull()
   })
+
+  test('filters empty/keyless web entries BEFORE capping, so the cap counts real rows', () => {
+    const model: YoudaoWebDictionaryModel = {
+      ec: { word: [{ usphone: 'x', trs: [{ tr: [{ l: { i: ['adj. x'] } }] }] }] },
+      web_trans: {
+        'web-translation': [
+          { key: 'empty', trans: [] }, // all-empty -> dropped
+          { key: 'w1', trans: [{ value: 'a' }] },
+          { key: 'w2', trans: [{ value: 'b' }] },
+          { key: 'w3', trans: [{ value: 'c' }] },
+          { key: 'w4', trans: [{ value: 'd' }] }, // would be lost if slice ran before filter
+        ],
+      },
+    }
+    const { web } = mapToBasicWeb(model)
+    expect(web).toHaveLength(MAX_WEB_RESULTS)
+    expect(web.map(item => item.key)).toEqual(['w1', 'w2', 'w3', 'w4'])
+  })
+
+  test('drops web entries missing a key', () => {
+    const model: YoudaoWebDictionaryModel = {
+      ec: { word: [{ usphone: 'x', trs: [] }] },
+      web_trans: {
+        'web-translation': [
+          { trans: [{ value: 'a' }] } as never, // no key
+          { key: 'k', trans: [{ value: 'b' }] },
+        ],
+      },
+    }
+    const { web } = mapToBasicWeb(model)
+    expect(web).toHaveLength(1)
+    expect(web[0].key).toBe('k')
+  })
 })
 
 describe('YoudaoDict.parse', () => {
@@ -104,6 +137,20 @@ describe('YoudaoDict.parse', () => {
     expect(results).toHaveLength(5 + 1 + MAX_WEB_RESULTS)
     // chinese query: explain row pronounces the english result
     expect(results[0].pronounce).toBe('beauty')
+  })
+
+  test('direction derives from the response (ce), even when input detection misfires', () => {
+    const adapter = new YoudaoDict()
+    // '美国梦2' contains a digit -> detectLanguage returns Auto (not ZH); the old
+    // code would treat it as non-Chinese and reverse the pronounce/phonetic.
+    adapter.url('美国梦2')
+    const results = adapter.parse(mei)
+    // ce response => zh->en => explain rows pronounce the English head word, not the input
+    expect(results[0].pronounce).toBe('beauty')
+    // and the pinyin phonetic row has a non-empty title (not dropped to '')
+    const phonetic = results.find(r => r.isPhonetic)!
+    expect(phonetic.title.length).toBeGreaterThan(0)
+    expect(phonetic.title).toContain('měi')
   })
 
   test('sentence-like model (no ec/ce) -> [] even if web_trans present', () => {

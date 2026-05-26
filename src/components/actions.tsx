@@ -167,8 +167,9 @@ export const CloseWindowAction = memo(() => (
 
 
 export const getDetailMarkdown = (item: Result): string => {
+  // trim: the phonetic title has a leading space, which would void the ** ** bold
   return dedent`
-    **${item.title}**
+    **${item.title.trim()}**
 
     ---
 

@@ -10,6 +10,8 @@ export interface Result {
   quicklookUrl?: string;
   /** mark this item only for pronounce with phonetic */
   isPhonetic: boolean;
+  /** marks a translate error row so it is not persisted to history */
+  isError?: boolean;
 }
 
 export interface Adapter {

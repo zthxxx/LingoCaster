@@ -1,6 +1,7 @@
 import { parseDotenv } from '../utils'
 import {
   type AdapterPlatform,
+  type Result,
 } from '../adapters'
 import goodFixture from '../adapters/__fixtures__/youdao-dict.good.json'
 import { Translator, type RequestFn } from './translator'
@@ -65,12 +66,49 @@ describe('Translator parallel translate + dict (no network)', () => {
     expect(results).toHaveLength(1)
   })
 
-  test('translate error surfaces while dict still appends', async () => {
+  test('a long camelCase identifier (short raw, long after spacing) still queries dict', async () => {
+    let dictCalled = false
+    const request: RequestFn = async (url) => {
+      if (isDictUrl(url)) {
+        dictCalled = true
+        return dictResponse
+      }
+      return { errorCode: '0', translation: ['翻译'] }
+    }
+    // raw length 39 (<45), but toSpaceCase expands to ~48 chars (>45)
+    const identifier = 'oneTwoThreeFourFiveSixSevenEightNineTen'
+    expect(identifier.length).toBeLessThanOrEqual(45)
+    await makeTranslator(request).translate(identifier)
+    expect(dictCalled).toBe(true)
+  })
+
+  test('translate error surfaces (flagged isError) while dict still appends', async () => {
     const request: RequestFn = async url => (isDictUrl(url) ? dictResponse : { errorCode: '108', translation: [] })
     const results = await makeTranslator(request).translate('good')
     // error row from translate + dict rows
     expect(results[0].title).toBe('👻 翻译出错啦')
+    expect(results[0].isError).toBe(true)
     expect(results.length).toBeGreaterThan(1)
+  })
+})
+
+describe('Translator.updateHistoryItem', () => {
+  const normal: Result = { id: '1', title: '词', subtitle: 'word', clipboard: '词', pronounce: 'word', isPhonetic: false }
+  const errored: Result = { id: '2', title: '👻 翻译出错啦', subtitle: 'err', clipboard: 'Ooops...', pronounce: '', isPhonetic: false, isError: true }
+  const noop: RequestFn = async () => ({})
+
+  test('persists a normal result under the query', () => {
+    const translator = makeTranslator(noop)
+    translator.updateHistoryItem('word', normal)
+    const history = translator.getHistory()
+    expect(history).toHaveLength(1)
+    expect(history[0].title).toBe('word')
+  })
+
+  test('does not persist an error result', () => {
+    const translator = makeTranslator(noop)
+    translator.updateHistoryItem('bad', errored)
+    expect(translator.getHistory()).toEqual([])
   })
 })
 
