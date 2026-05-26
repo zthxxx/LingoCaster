@@ -14,7 +14,7 @@ import {
 } from './adapters'
 import {
   Translator,
-  HistoryManager,
+  createHistoryManager,
 } from './workflow'
 import { TranslateView } from './components'
 
@@ -38,7 +38,7 @@ export const ViewWithSection = memo(() => {
     key: APP_KEY,
     secret: APP_SECRET,
     platform: APP_PLATFORM,
-    historyManager: new HistoryManager(),
+    historyManager: createHistoryManager(),
   }), [])
 
 

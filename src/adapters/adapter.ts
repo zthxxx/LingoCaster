@@ -13,14 +13,6 @@ export interface Result {
 }
 
 export interface Adapter {
-  key: string;
-
-  secret: string;
-
-  word: string;
-
-  isChinese: boolean;
-
   url: (word: string) => string;
 
   /** declared as a method so each adapter can narrow `response` to its own payload type */

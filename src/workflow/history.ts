@@ -1,4 +1,3 @@
-import { Cache } from '@raycast/api'
 import {
   type Result,
 } from '../adapters'
@@ -6,42 +5,65 @@ import {
   LRUCache,
 } from '../utils'
 
-const cacheItemsNamespace = 'query-history-items'
-const cacheMetadataNamespace = 'items-metadata'
-
 export interface QueryItem {
   query: string;
   result: Result;
   updateTime: string;
 }
 
-const historyCache = new Cache({
-  namespace: cacheItemsNamespace,
-})
+/**
+ * Minimal key-value storage contract (a subset of Raycast `Cache`).
+ * Injected into `HistoryManager` so the history layer stays free of `@raycast/api`
+ * and is unit-testable. Raycast wiring lives in `./raycast-cache`.
+ */
+export interface KVStorage {
+  get(key: string): string | undefined;
+  set(key: string, value: string): void;
+  remove(key: string): void;
+}
 
-const metadataCache = new Cache({
-  namespace: cacheMetadataNamespace,
-})
+/** In-memory `KVStorage` — used by tests and as a non-persistent fallback. */
+export class MemoryStorage implements KVStorage {
+  private store = new Map<string, string>()
 
-export interface MetadataCacheStorage {
-  metadata: HistoryMetadata;
+  get(key: string): string | undefined {
+    return this.store.get(key)
+  }
+
+  set(key: string, value: string): void {
+    this.store.set(key, value)
+  }
+
+  remove(key: string): void {
+    this.store.delete(key)
+  }
 }
 
 interface HistoryMetadata {
   list: Array<QueryItem['query']>;
 }
 
+const metadataKey = 'metadata'
+
 export class HistoryManager {
   private maxSize: number
+  private itemsStorage: KVStorage
+  private metadataStorage: KVStorage
   public cache!: LRUCache
 
-  constructor(maxSize: number = 50) {
+  constructor({ itemsStorage, metadataStorage, maxSize = 50 }: {
+    itemsStorage: KVStorage;
+    metadataStorage: KVStorage;
+    maxSize?: number;
+  }) {
+    this.itemsStorage = itemsStorage
+    this.metadataStorage = metadataStorage
     this.maxSize = maxSize
     this.init()
   }
 
   init() {
-    const data = metadataCache.get('metadata')
+    const data = this.metadataStorage.get(metadataKey)
     const metadata: HistoryMetadata = data
       ? JSON.parse(data) as HistoryMetadata
       : { list: [] }
@@ -56,7 +78,7 @@ export class HistoryManager {
     const queryList = this.cache.getList()
     return queryList
       .map(query => {
-        const itemData = historyCache.get(query)
+        const itemData = this.itemsStorage.get(query)
         return itemData
           ? JSON.parse(itemData) as QueryItem
           : null
@@ -67,12 +89,11 @@ export class HistoryManager {
   upsert(queryItem: QueryItem) {
     const deleted = this.cache.put(queryItem.query)
     if (deleted) {
-      historyCache.remove(deleted)
+      this.itemsStorage.remove(deleted)
     }
-    historyCache.set(queryItem.query, JSON.stringify(queryItem))
-    metadataCache.set('metadata', JSON.stringify({
+    this.itemsStorage.set(queryItem.query, JSON.stringify(queryItem))
+    this.metadataStorage.set(metadataKey, JSON.stringify({
       list: this.cache.getList(),
     }))
   }
 }
-
