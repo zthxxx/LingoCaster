@@ -7,7 +7,6 @@ import {
 import {
   Action,
   ActionPanel,
-  closeMainWindow,
   Icon,
   Detail,
   type Keyboard,
@@ -138,7 +137,6 @@ export const ListItemActions = memo(() => {
 
       <ShowMoreDetailAction />
       <QuickLookAction />
-      <CloseWindowAction />
     </>
   )
 })
@@ -155,16 +153,6 @@ export const QuickLookAction = memo(() => {
     />
   )
 })
-
-export const CloseWindowAction = memo(() => (
-  <Action
-    shortcut={{ modifiers: [], key: 'escape' }}
-    title='Close'
-    icon={Icon.XMarkCircle}
-    onAction={() => closeMainWindow()}
-  />
-))
-
 
 export const getDetailMarkdown = (item: Result): string => {
   // trim: the phonetic title has a leading space, which would void the ** ** bold
