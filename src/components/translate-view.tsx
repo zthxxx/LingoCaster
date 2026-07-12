@@ -118,8 +118,8 @@ const useInputText$ = ({ initInput, pipeline }: {
 }): BehaviorSubject<string> & { next: (params: string) => void } => {
   const [, setInputText] = useState('')
   const inputText$ = useMemo(
-    () => new BehaviorSubject((initInput ?? '').trim()),
-    [initInput],
+    () => new BehaviorSubject(''),
+    [],
   )
 
   useEffect(() => {
@@ -132,6 +132,15 @@ const useInputText$ = ({ initInput, pipeline }: {
     ).subscribe()
 
     return () => subscription.unsubscribe()
+  }, [])
+
+  // initInput arrives async (selection / clipboard readout);
+  // apply it only while the user hasn't typed anything yet
+  useEffect(() => {
+    const init = (initInput ?? '').trim()
+    if (init && !inputText$.value) {
+      inputText$.next(init)
+    }
   }, [initInput])
 
   inputText$.next = inputText$.next.bind(inputText$)

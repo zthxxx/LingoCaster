@@ -14,7 +14,7 @@ import {
 } from './adapters'
 import {
   Translator,
-  HistoryManager,
+  createHistoryManager,
 } from './workflow'
 import { TranslateView } from './components'
 
@@ -23,6 +23,27 @@ interface Preferences {
   APP_KEY: string;
   APP_SECRET: string;
   APP_PLATFORM: AdapterPlatform;
+}
+
+/**
+ * capture at module load — the command entry evaluates right at launch,
+ * before first render, while the frontmost app's selection is still intact;
+ * getSelectedText may resolve '' (not reject) when nothing is selected
+ */
+const selectionAtLaunch: Promise<string> = getSelectedText()
+  .then(text => text.trim())
+  .catch(() => '')
+
+/**
+ * initial text priority: selection > clipboard > empty
+ */
+const readInitialText = async (): Promise<string> => {
+  const selected = await selectionAtLaunch
+  if (selected) return selected
+
+  return await Clipboard.readText()
+    .then(text => text?.trim() ?? '')
+    .catch(() => '')
 }
 
 export const ViewWithSection = memo(() => {
@@ -38,17 +59,12 @@ export const ViewWithSection = memo(() => {
     key: APP_KEY,
     secret: APP_SECRET,
     platform: APP_PLATFORM,
-    historyManager: new HistoryManager(),
+    historyManager: createHistoryManager(),
   }), [])
 
 
   useEffect(() => {
-    getSelectedText()
-      .then(text => setSelected(text.trim()))
-      .catch(async () => {
-        const text = await Clipboard.readText()
-        setSelected(text?.trim() ?? '')
-      })
+    readInitialText().then(setSelected)
   }, [])
 
   return (

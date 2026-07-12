@@ -1,0 +1,308 @@
+{
+  "web_trans": {
+    "web-translation": [
+      {
+        "@same": "true",
+        "key": "good",
+        "key-speech": "good",
+        "trans": [
+          {
+            "summary": {
+              "line": [
+                "在此，希望全体同学在这几天要做到这一点。And，任何发言都是<b>好的</b>(<b>good</b>)，但是不发言，不思考，那是(bad)，课堂上不允许有无礼的行为。"
+              ]
+            },
+            "value": "好的",
+            "support": 1942,
+            "url": ""
+          },
+          {
+            "summary": {
+              "line": [
+                "这一能力在以下情形下，表现得尤其突出：人类的<b>善</b>（<b>good</b>）是多种多样的，每一个<b>善</b>都有足够强大的理由支持，彼此之间相互冲突且不可通约。"
+              ]
+            },
+            "value": "善",
+            "support": 1606,
+            "url": ""
+          },
+          {
+            "summary": {
+              "line": [
+                "教育就是培养<b>良好</b>的习惯-教育理论-中国论文联盟 关键词】培养；<b>良好</b>；习惯 [gap=496]Key words】Development；Good；Habit"
+              ]
+            },
+            "value": "良好",
+            "support": 1524,
+            "url": ""
+          },
+          {
+            "summary": {
+              "line": [
+                "【<b>商品</b>中文名称】levis李维斯597弹性深蓝色牛仔裤 【<b>商品</b>英文名称】Low Square Boot 597™ Snap Back Jeans - Good 相关标签： 裤子 服饰箱包 李维斯 牛仔裤 ¥826.11 来自 美国购物网 复古经典正品李维斯LEVI'S板材眼镜架LS06040C."
+              ]
+            },
+            "value": "商品",
+            "support": 1094,
+            "url": ""
+          }
+        ]
+      },
+      {
+        "key": "Good Will Hunting",
+        "key-speech": "Good+Will+Hunting",
+        "trans": [
+          {
+            "value": "心灵捕手"
+          },
+          {
+            "value": "骄阳似我"
+          },
+          {
+            "value": "心魄捕手"
+          }
+        ]
+      },
+      {
+        "key": "Very Good",
+        "key-speech": "Very+Good",
+        "trans": [
+          {
+            "value": "很好"
+          },
+          {
+            "value": "非常好"
+          },
+          {
+            "value": "相当好"
+          },
+          {
+            "value": "好极了"
+          }
+        ]
+      },
+      {
+        "key": "Good morning",
+        "key-speech": "Good+morning",
+        "trans": [
+          {
+            "value": "早上好"
+          },
+          {
+            "value": "早安"
+          },
+          {
+            "value": "早晨好"
+          },
+          {
+            "value": "鼓捣猫呢"
+          }
+        ]
+      },
+      {
+        "key": "good night",
+        "key-speech": "good+night",
+        "trans": [
+          {
+            "value": "晚安"
+          },
+          {
+            "value": "曾轶可"
+          },
+          {
+            "value": "晚上好"
+          },
+          {
+            "value": "好夜晚"
+          }
+        ]
+      },
+      {
+        "key": "Good Times",
+        "key-speech": "Good+Times",
+        "trans": [
+          {
+            "value": "美好时光"
+          },
+          {
+            "value": "欢乐时光"
+          },
+          {
+            "value": "好日子"
+          },
+          {
+            "value": "好时光"
+          }
+        ]
+      },
+      {
+        "key": "for good",
+        "key-speech": "for+good",
+        "trans": [
+          {
+            "value": "永远"
+          },
+          {
+            "value": "永恒地"
+          }
+        ]
+      },
+      {
+        "key": "public good",
+        "key-speech": "public+good",
+        "trans": [
+          {
+            "value": "公共物品"
+          },
+          {
+            "value": "公益事业"
+          },
+          {
+            "value": "公共财"
+          }
+        ]
+      },
+      {
+        "key": "be good at",
+        "key-speech": "be+good+at",
+        "trans": [
+          {
+            "value": "善于"
+          },
+          {
+            "value": "擅长"
+          },
+          {
+            "value": "擅长于"
+          },
+          {
+            "value": "在某方面擅长"
+          }
+        ]
+      }
+    ]
+  },
+  "input": "good",
+  "meta": {
+    "input": "good",
+    "guessLanguage": "eng",
+    "isHasSimpleDict": "1",
+    "le": "en",
+    "lang": "eng",
+    "dicts": [
+      "web_trans",
+      "meta",
+      "simple",
+      "ec"
+    ]
+  },
+  "le": "en",
+  "simple": {
+    "query": "good",
+    "word": [
+      {
+        "usphone": "ɡʊd",
+        "ukphone": "ɡʊd",
+        "ukspeech": "good&type=1",
+        "return-phrase": "good",
+        "usspeech": "good&type=2",
+        "collegeExamVoice": {
+          "speechWord": "good"
+        }
+      }
+    ]
+  },
+  "lang": "eng",
+  "ec": {
+    "exam_type": [
+      "初中",
+      "高中",
+      "CET4",
+      "CET6",
+      "考研"
+    ],
+    "source": {
+      "name": "有道词典",
+      "url": "https://dict.youdao.com"
+    },
+    "word": [
+      {
+        "usphone": "ɡʊd",
+        "ukphone": "ɡʊd",
+        "ukspeech": "good&type=1",
+        "trs": [
+          {
+            "tr": [
+              {
+                "l": {
+                  "i": [
+                    "adj. 优良的；能干的，擅长的；令人愉快的，满意的；合适的，方便的；有益的；乖的；虔诚的；健康的；善良的；正直的；相当大的，相当多的；至少；彻底的；明智的，合理的；划算的，收益可观的；赢得赞许的，令人尊敬的；（用于表示回应）好的；表示惊讶、生气或者加强语气；（用于打招呼）好；有趣的；有效的；能提供……的；（踢、射、投）命中；亲密的；<非正式>够了"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "tr": [
+              {
+                "l": {
+                  "i": [
+                    "n. 善，正义；好事；商品，所有物；<英>（运载的）货物（goods）；优势，利益；<非正式>真货，正品（the goods）；好人，有道德的人（the good）"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "tr": [
+              {
+                "l": {
+                  "i": [
+                    "adv. <非正式>好地；<美>彻底地，完全地"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "tr": [
+              {
+                "l": {
+                  "i": [
+                    "【名】 （Good）（英）古德，（瑞典）戈德（人名）"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "wfs": [
+          {
+            "wf": {
+              "name": "复数",
+              "value": "goods"
+            }
+          },
+          {
+            "wf": {
+              "name": "比较级",
+              "value": "better"
+            }
+          },
+          {
+            "wf": {
+              "name": "最高级",
+              "value": "best"
+            }
+          }
+        ],
+        "return-phrase": {
+          "l": {
+            "i": "good"
+          }
+        },
+        "usspeech": "good&type=2"
+      }
+    ]
+  }
+}
