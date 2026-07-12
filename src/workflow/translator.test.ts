@@ -1,8 +1,5 @@
-import { parseDotenv } from '../utils'
-import {
-  type AdapterPlatform,
-  type Result,
-} from '../adapters'
+import { parseDotenv } from '../utils/dotenv'
+import { type AdapterPlatform, type Result } from '../adapters'
 import goodFixture from '../adapters/__fixtures__/youdao-dict.good.json'
 import { Translator, type RequestFn } from './translator'
 import { HistoryManager, MemoryStorage } from './history'
@@ -11,25 +8,28 @@ parseDotenv()
 
 const dictResponse = goodFixture as unknown
 
-const makeHistory = () => new HistoryManager({
-  itemsStorage: new MemoryStorage(),
-  metadataStorage: new MemoryStorage(),
-})
+const makeHistory = () =>
+  new HistoryManager({
+    itemsStorage: new MemoryStorage(),
+    metadataStorage: new MemoryStorage(),
+  })
 
-const makeTranslator = (request: RequestFn) => new Translator({
-  key: 'test-key',
-  secret: 'test-secret',
-  platform: 'Youdao' as AdapterPlatform,
-  historyManager: makeHistory(),
-  request,
-})
+const makeTranslator = (request: RequestFn) =>
+  new Translator({
+    key: 'test-key',
+    secret: 'test-secret',
+    platform: 'Youdao' as AdapterPlatform,
+    historyManager: makeHistory(),
+    request,
+  })
 
 const isDictUrl = (url: string) => url.includes('dict.youdao.com/jsonapi')
 
 describe('Translator parallel translate + dict (no network)', () => {
   test('translation headline first, dict detail appended', async () => {
     // degraded openapi: translation only (no basic/web); dict supplies the detail
-    const request: RequestFn = async url => (isDictUrl(url) ? dictResponse : { errorCode: '0', translation: ['好的'] })
+    const request: RequestFn = async (url) =>
+      isDictUrl(url) ? dictResponse : { errorCode: '0', translation: ['好的'] }
     const results = await makeTranslator(request).translate('good')
 
     // 1 translation + (4 explains + 1 phonetic + 4 web) from dict fixture
@@ -38,7 +38,7 @@ describe('Translator parallel translate + dict (no network)', () => {
     expect(results[0].subtitle).toBe('good')
     expect(results[0].isPhonetic).toBe(false)
     // dict contributed a phonetic row
-    expect(results.some(r => r.isPhonetic)).toBe(true)
+    expect(results.some((r) => r.isPhonetic)).toBe(true)
   })
 
   test('dict failure degrades gracefully to translation only', async () => {
@@ -83,7 +83,7 @@ describe('Translator parallel translate + dict (no network)', () => {
   })
 
   test('translate error surfaces (flagged isError) while dict still appends', async () => {
-    const request: RequestFn = async url => (isDictUrl(url) ? dictResponse : { errorCode: '108', translation: [] })
+    const request: RequestFn = async (url) => (isDictUrl(url) ? dictResponse : { errorCode: '108', translation: [] })
     const results = await makeTranslator(request).translate('good')
     // error row from translate + dict rows
     expect(results[0].title).toBe('👻 翻译出错啦')
@@ -93,8 +93,23 @@ describe('Translator parallel translate + dict (no network)', () => {
 })
 
 describe('Translator.updateHistoryItem', () => {
-  const normal: Result = { id: '1', title: '词', subtitle: 'word', clipboard: '词', pronounce: 'word', isPhonetic: false }
-  const errored: Result = { id: '2', title: '👻 翻译出错啦', subtitle: 'err', clipboard: 'Ooops...', pronounce: '', isPhonetic: false, isError: true }
+  const normal: Result = {
+    id: '1',
+    title: '词',
+    subtitle: 'word',
+    clipboard: '词',
+    pronounce: 'word',
+    isPhonetic: false,
+  }
+  const errored: Result = {
+    id: '2',
+    title: '👻 翻译出错啦',
+    subtitle: 'err',
+    clipboard: 'Ooops...',
+    pronounce: '',
+    isPhonetic: false,
+    isError: true,
+  }
   const noop: RequestFn = async () => ({})
 
   test('persists a normal result under the query', () => {
@@ -112,16 +127,9 @@ describe('Translator.updateHistoryItem', () => {
   })
 })
 
-const {
-  APP_KEY,
-  APP_SECRET,
-  APP_PLATFORM,
-} = process.env;
+const { APP_KEY, APP_SECRET, APP_PLATFORM } = process.env
 
-((APP_KEY && APP_SECRET && APP_PLATFORM)
-  ? describe
-  : describe.skip
-)('translator with network', () => {
+;(APP_KEY && APP_SECRET && APP_PLATFORM ? describe : describe.skip)('translator with network', () => {
   test('word: translation headline + appended dict detail', async () => {
     const translator = new Translator({
       key: APP_KEY!,

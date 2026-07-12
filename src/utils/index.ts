@@ -1,5 +1,4 @@
 export * from './crypto'
-export * from './dotenv'
 export * from './format'
 export * from './nanoid'
 export * from './languages'
