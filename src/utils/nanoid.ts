@@ -5,7 +5,4 @@ import { customAlphabet } from 'nanoid/non-secure'
  *
  * https://github.com/ai/nanoid
  */
-export const nanoid = customAlphabet(
-  '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-  10,
-)
+export const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 10)

@@ -1,6 +1,5 @@
 import { toSpaceCase } from './format'
 
-
 test('simple test toSpaceCase', () => {
   const cases: Array<{ input: string; expect: string }> = [
     {
@@ -90,4 +89,3 @@ test('simple test toSpaceCase', () => {
 
   expect(results).toEqual(cases)
 })
-

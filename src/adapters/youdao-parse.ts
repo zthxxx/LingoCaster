@@ -1,6 +1,4 @@
-import {
-  nanoid,
-} from '../utils'
+import { nanoid } from '../utils'
 import type { Result } from './adapter'
 
 export const youdaoErrMessages: Record<string, string> = {
@@ -18,42 +16,45 @@ export const youdaoErrMessages: Record<string, string> = {
 }
 
 export interface YoudaoAPIData {
-  errorCode: '0' | keyof typeof youdaoErrMessages;
-  translation: string[];
+  errorCode: '0' | keyof typeof youdaoErrMessages
+  translation: string[]
   basic: {
-    phonetic: string;
-    'us-phonetic': string;
-    'uk-phonetic': string;
-    explains: string[];
-  };
+    phonetic: string
+    'us-phonetic': string
+    'uk-phonetic': string
+    explains: string[]
+  }
   /** some examples in web */
   web: Array<{
-    key: string;
-    value: string[];
-  }>;
+    key: string
+    value: string[]
+  }>
 }
 
 /** Per-query context shared by the pure parsers (replaces the former instance state). */
 export interface ParseContext {
-  word: string;
-  isChinese: boolean;
+  word: string
+  isChinese: boolean
 }
 
-export function makeResult(ctx: ParseContext, {
-  title,
-  subtitle,
-  clipboard = '',
-  pronounce = '',
-  isPhonetic = false,
-  isError = false,
-}: {
-  title: string;
-  subtitle: string;
-  clipboard?: string;
-  pronounce?: string;
-  isPhonetic?: boolean;
-  isError?: boolean;
-}): Result {
+export function makeResult(
+  ctx: ParseContext,
+  {
+    title,
+    subtitle,
+    clipboard = '',
+    pronounce = '',
+    isPhonetic = false,
+    isError = false,
+  }: {
+    title: string
+    subtitle: string
+    clipboard?: string
+    pronounce?: string
+    isPhonetic?: boolean
+    isError?: boolean
+  },
+): Result {
   return {
     id: nanoid(),
     title,
@@ -72,12 +73,14 @@ export function parseTranslation(translation: string[], ctx: ParseContext): Resu
   if (!headline) return []
 
   const pronounce = ctx.isChinese ? headline : ctx.word
-  return [makeResult(ctx, {
-    title: headline,
-    subtitle: ctx.word,
-    clipboard: headline,
-    pronounce,
-  })]
+  return [
+    makeResult(ctx, {
+      title: headline,
+      subtitle: ctx.word,
+      clipboard: headline,
+      pronounce,
+    }),
+  ]
 }
 
 export function parseBasic(basic: YoudaoAPIData['basic'], ctx: ParseContext): Result[] {
@@ -86,26 +89,30 @@ export function parseBasic(basic: YoudaoAPIData['basic'], ctx: ParseContext): Re
   const results: Result[] = []
   basic.explains.forEach((explain) => {
     const pronounce = ctx.isChinese ? explain : ctx.word
-    results.push(makeResult(ctx, {
-      title: explain,
-      subtitle: ctx.word,
-      clipboard: explain,
-      pronounce,
-    }))
+    results.push(
+      makeResult(ctx, {
+        title: explain,
+        subtitle: ctx.word,
+        clipboard: explain,
+        pronounce,
+      }),
+    )
   })
 
   if (basic.phonetic) {
     const phonetic: string = parsePhonetic(basic, ctx)
     // pronounce the head word: the English result for zh->en, otherwise the queried word.
     // (must not reuse a per-explain pronounce, which would leak the last/empty value)
-    const headWord = ctx.isChinese ? (basic.explains[0] ?? ctx.word) : ctx.word
-    results.push(makeResult(ctx, {
-      title: phonetic,
-      subtitle: '回车可听发音',
-      clipboard: headWord,
-      pronounce: headWord,
-      isPhonetic: true,
-    }))
+    const headWord = ctx.isChinese ? basic.explains[0] ?? ctx.word : ctx.word
+    results.push(
+      makeResult(ctx, {
+        title: phonetic,
+        subtitle: '回车可听发音',
+        clipboard: headWord,
+        pronounce: headWord,
+        isPhonetic: true,
+      }),
+    )
   }
 
   return results
@@ -115,7 +122,7 @@ export function parseWeb(web: YoudaoAPIData['web'], ctx: ParseContext): Result[]
   if (!web) return []
 
   return web
-    .filter(item => item.value?.length)
+    .filter((item) => item.value?.length)
     .map((item) => {
       const pronounce = ctx.isChinese ? item.value[0] : item.key
       return makeResult(ctx, {
@@ -148,10 +155,12 @@ export function parsePhonetic(basic: YoudaoAPIData['basic'], ctx: ParseContext):
 export function parseError(code: string, ctx: ParseContext): Result[] {
   const message = youdaoErrMessages[code] ?? `请参考错误码: ${code}`
 
-  return [makeResult(ctx, {
-    title: '👻 翻译出错啦',
-    subtitle: message,
-    clipboard: 'Ooops...',
-    isError: true,
-  })]
+  return [
+    makeResult(ctx, {
+      title: '👻 翻译出错啦',
+      subtitle: message,
+      clipboard: 'Ooops...',
+      isError: true,
+    }),
+  ]
 }

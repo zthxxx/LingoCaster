@@ -25,12 +25,12 @@ export class LRUCache {
     this.tail = null
   }
 
-  static from({ list, capacity }: {
-    list: string[];
-    capacity: number;
-  }): LRUCache {
+  static from({ list, capacity }: { list: string[]; capacity: number }): LRUCache {
     const cache = new LRUCache(capacity)
-    list.slice().reverse().forEach((item) => cache.put(item))
+    list
+      .slice()
+      .reverse()
+      .forEach((item) => cache.put(item))
     return cache
   }
 
@@ -67,16 +67,14 @@ export class LRUCache {
     if (node) {
       node.value = value
       this.moveToHead(node)
-    }
-    else {
+    } else {
       const newNode = new ListNode(value, value)
       this.cache.set(value, newNode)
 
       if (!this.head) {
         this.head = newNode
         this.tail = newNode
-      }
-      else {
+      } else {
         newNode.next = this.head
         this.head.prev = newNode
         this.head = newNode

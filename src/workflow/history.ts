@@ -1,14 +1,10 @@
-import {
-  type Result,
-} from '../adapters'
-import {
-  LRUCache,
-} from '../utils'
+import { type Result } from '../adapters'
+import { LRUCache } from '../utils'
 
 export interface QueryItem {
-  query: string;
-  result: Result;
-  updateTime: string;
+  query: string
+  result: Result
+  updateTime: string
 }
 
 /**
@@ -17,9 +13,9 @@ export interface QueryItem {
  * and is unit-testable. Raycast wiring lives in `./raycast-cache`.
  */
 export interface KVStorage {
-  get(key: string): string | undefined;
-  set(key: string, value: string): void;
-  remove(key: string): void;
+  get(key: string): string | undefined
+  set(key: string, value: string): void
+  remove(key: string): void
 }
 
 /** In-memory `KVStorage` — used by tests and as a non-persistent fallback. */
@@ -40,7 +36,7 @@ export class MemoryStorage implements KVStorage {
 }
 
 interface HistoryMetadata {
-  list: Array<QueryItem['query']>;
+  list: Array<QueryItem['query']>
 }
 
 const metadataKey = 'metadata'
@@ -50,8 +46,7 @@ const safeParse = <T>(raw: string | undefined, fallback: T): T => {
   if (!raw) return fallback
   try {
     return JSON.parse(raw) as T
-  }
-  catch {
+  } catch {
     return fallback
   }
 }
@@ -62,10 +57,14 @@ export class HistoryManager {
   private metadataStorage: KVStorage
   public cache!: LRUCache
 
-  constructor({ itemsStorage, metadataStorage, maxSize = 50 }: {
-    itemsStorage: KVStorage;
-    metadataStorage: KVStorage;
-    maxSize?: number;
+  constructor({
+    itemsStorage,
+    metadataStorage,
+    maxSize = 50,
+  }: {
+    itemsStorage: KVStorage
+    metadataStorage: KVStorage
+    maxSize?: number
   }) {
     this.itemsStorage = itemsStorage
     this.metadataStorage = metadataStorage
@@ -84,8 +83,9 @@ export class HistoryManager {
   }
 
   getList(): QueryItem[] {
-    return this.cache.getList()
-      .map(query => safeParse<QueryItem | null>(this.itemsStorage.get(query), null))
+    return this.cache
+      .getList()
+      .map((query) => safeParse<QueryItem | null>(this.itemsStorage.get(query), null))
       .filter((item): item is QueryItem => item !== null)
   }
 
@@ -95,8 +95,11 @@ export class HistoryManager {
       this.itemsStorage.remove(deleted)
     }
     this.itemsStorage.set(queryItem.query, JSON.stringify(queryItem))
-    this.metadataStorage.set(metadataKey, JSON.stringify({
-      list: this.cache.getList(),
-    }))
+    this.metadataStorage.set(
+      metadataKey,
+      JSON.stringify({
+        list: this.cache.getList(),
+      }),
+    )
   }
 }

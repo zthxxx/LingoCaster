@@ -1,70 +1,36 @@
-import {
-  memo,
-  type ReactNode,
-  useContext,
-  createContext,
-} from 'react'
-import {
-  Action,
-  ActionPanel,
-  Icon,
-  Detail,
-  type Keyboard,
-} from '@raycast/api'
+import { memo, type ReactNode, useContext, createContext } from 'react'
+import { Action, ActionPanel, Icon, Detail, type Keyboard } from '@raycast/api'
 import dedent from 'dedent'
-import {
-  type Result,
-} from '../adapters'
-import {
-  speakSay,
-} from '../workflow'
+import { type Result } from '../adapters'
+import { speakSay } from '../workflow'
 
 const actionContext = createContext<{
-  item: Result;
+  item: Result
 }>({} as { item: Result })
 
-export const ActionContextPanel = memo((props: {
-  item: Result;
-  children: ReactNode;
-}) => {
+export const ActionContextPanel = memo((props: { item: Result; children: ReactNode }) => {
   const { item, children } = props
 
   return (
     <actionContext.Provider value={{ item }}>
-      <ActionPanel>
-        {children}
-      </ActionPanel>
+      <ActionPanel>{children}</ActionPanel>
     </actionContext.Provider>
   )
 })
 
-export const CopyToClipboardAction = memo((props: {
-  shortcut?: Keyboard.Shortcut;
-}) => {
+export const CopyToClipboardAction = memo((props: { shortcut?: Keyboard.Shortcut }) => {
   const { shortcut } = props
   const { item } = useContext(actionContext)
 
-  return (
-    <Action.CopyToClipboard
-      shortcut={shortcut}
-      content={item.clipboard}
-    />
-  )
+  return <Action.CopyToClipboard shortcut={shortcut} content={item.clipboard} />
 })
 
-export const PlayTextAction = memo((props: {
-  shortcut?: Keyboard.Shortcut;
-}) => {
+export const PlayTextAction = memo((props: { shortcut?: Keyboard.Shortcut }) => {
   const { shortcut } = props
   const { item } = useContext(actionContext)
 
   return (
-    <Action
-      shortcut={shortcut}
-      title='Play Text'
-      icon={Icon.SpeakerHigh}
-      onAction={() => speakSay(item.pronounce)}
-    />
+    <Action shortcut={shortcut} title='Play Text' icon={Icon.SpeakerHigh} onAction={() => speakSay(item.pronounce)} />
   )
 })
 
@@ -79,9 +45,7 @@ export const ShowMoreDetailAction = memo(() => {
         <Detail
           markdown={getDetailMarkdown(item)}
           actions={
-            <ActionContextPanel
-              item={item}
-            >
+            <ActionContextPanel item={item}>
               <ItemDetailActions />
             </ActionContextPanel>
           }
@@ -96,20 +60,17 @@ export const ItemDetailActions = memo(() => {
 
   return (
     <>
-      {item.isPhonetic
-        ? (
-          <>
-            <PlayTextAction />
-            <CopyToClipboardAction />
-          </>
-        )
-        : (
-          <>
-            <CopyToClipboardAction />
-            <PlayTextAction />
-          </>
-        )
-      }
+      {item.isPhonetic ? (
+        <>
+          <PlayTextAction />
+          <CopyToClipboardAction />
+        </>
+      ) : (
+        <>
+          <CopyToClipboardAction />
+          <PlayTextAction />
+        </>
+      )}
       <QuickLookAction />
     </>
   )
@@ -120,20 +81,17 @@ export const ListItemActions = memo(() => {
 
   return (
     <>
-      {item.isPhonetic
-        ? (
-          <>
-            <PlayTextAction />
-            <CopyToClipboardAction />
-          </>
-        )
-        : (
-          <>
-            <CopyToClipboardAction />
-            <PlayTextAction />
-          </>
-        )
-      }
+      {item.isPhonetic ? (
+        <>
+          <PlayTextAction />
+          <CopyToClipboardAction />
+        </>
+      ) : (
+        <>
+          <CopyToClipboardAction />
+          <PlayTextAction />
+        </>
+      )}
 
       <ShowMoreDetailAction />
       <QuickLookAction />

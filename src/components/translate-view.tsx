@@ -1,12 +1,5 @@
-import {
-  memo,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
-import {
-  List,
-} from '@raycast/api'
+import { memo, useEffect, useMemo, useState } from 'react'
+import { List } from '@raycast/api'
 import {
   debounceTime,
   tap,
@@ -18,28 +11,17 @@ import {
   BehaviorSubject,
 } from 'rxjs'
 import stringWidth from 'string-width'
-import {
-  type Result,
-} from '../adapters'
-import {
-  type Translator,
-} from '../workflow'
-import {
-  ActionContextPanel,
-  ListItemActions,
-  getDetailMarkdown,
-} from '../components'
+import { type Result } from '../adapters'
+import { type Translator } from '../workflow'
+import { ActionContextPanel, ListItemActions, getDetailMarkdown } from '../components'
 
 interface TranslateParams {
-  selected?: string;
-  translator: Translator;
+  selected?: string
+  translator: Translator
 }
 
 export const TranslateView = memo((props: TranslateParams) => {
-  const {
-    selected,
-    translator,
-  } = props
+  const { selected, translator } = props
 
   const [results, setResults] = useState<Result[]>([])
   const [loading, setLoading] = useState(false)
@@ -47,40 +29,36 @@ export const TranslateView = memo((props: TranslateParams) => {
 
   const inputText$ = useInputText$({
     initInput: selected,
-    pipeline: inputText$ => inputText$.pipe(
-      debounceTime(300),
-      map(text => text.trim().substring(0, 2000)),
-      // distinctUntilChanged(),
-      tap(text => {
-        if (text) setLoading(true)
-      }),
-      switchMap(async text => {
-        if (!text) return { query: '', results: [] }
-        return {
-          query: text,
-          results: (text === '*')
-            ? translator.getHistory()
-            : await translator.translate(text),
-        }
-      }),
-      tap(({ results }) => {
-        setResults(results)
-        setLoading(false)
-      }),
-      // update history
-      debounceTime(1500),
-      tap(({ query, results }) => {
-        if (query && query !== '*') {
-          translator.updateHistoryItem(query, results[0])
-        }
-      }),
-    ),
+    pipeline: (inputText$) =>
+      inputText$.pipe(
+        debounceTime(300),
+        map((text) => text.trim().substring(0, 2000)),
+        // distinctUntilChanged(),
+        tap((text) => {
+          if (text) setLoading(true)
+        }),
+        switchMap(async (text) => {
+          if (!text) return { query: '', results: [] }
+          return {
+            query: text,
+            results: text === '*' ? translator.getHistory() : await translator.translate(text),
+          }
+        }),
+        tap(({ results }) => {
+          setResults(results)
+          setLoading(false)
+        }),
+        // update history
+        debounceTime(1500),
+        tap(({ query, results }) => {
+          if (query && query !== '*') {
+            translator.updateHistoryItem(query, results[0])
+          }
+        }),
+      ),
   })
 
-  const itemsMap = useMemo(
-    () => new Map(results.map(item => [item.id, item])),
-    [results],
-  )
+  const itemsMap = useMemo(() => new Map(results.map((item) => [item.id, item])), [results])
 
   return (
     <List
@@ -89,7 +67,7 @@ export const TranslateView = memo((props: TranslateParams) => {
       searchBarPlaceholder='Search for translate ...'
       isShowingDetail={showingDetail.value && !!results.length}
       onSearchTextChange={inputText$.next}
-      onSelectionChange={id => {
+      onSelectionChange={(id) => {
         const item = itemsMap.get(id!)
         if (!item) return
         const width = stringWidth(item.title + item.subtitle)
@@ -112,22 +90,22 @@ export const TranslateView = memo((props: TranslateParams) => {
 
 const maxLineChars = 88
 
-const useInputText$ = ({ initInput, pipeline }: {
-  initInput?: string;
-  pipeline: (inputText$: Observable<string>) => Observable<unknown>;
+const useInputText$ = ({
+  initInput,
+  pipeline,
+}: {
+  initInput?: string
+  pipeline: (inputText$: Observable<string>) => Observable<unknown>
 }): BehaviorSubject<string> & { next: (params: string) => void } => {
   const [, setInputText] = useState('')
-  const inputText$ = useMemo(
-    () => new BehaviorSubject(''),
-    [],
-  )
+  const inputText$ = useMemo(() => new BehaviorSubject(''), [])
 
   useEffect(() => {
     const subscription = pipeline(
       inputText$.pipe(
-        skipWhile(text => !text),
+        skipWhile((text) => !text),
         // bindings for react component render
-        tap(text => setInputText(text)),
+        tap((text) => setInputText(text)),
       ),
     ).subscribe()
 
@@ -149,16 +127,10 @@ const useInputText$ = ({ initInput, pipeline }: {
 
 const useShowingDetail$ = (): BehaviorSubject<boolean> => {
   const [, setShowingDetail] = useState(false)
-  const showingDetail$ = useMemo(
-    () => new BehaviorSubject(false),
-    [],
-  )
+  const showingDetail$ = useMemo(() => new BehaviorSubject(false), [])
 
   useEffect(() => {
-    const subscription = showingDetail$.pipe(
-      distinctUntilChanged(),
-      tap(setShowingDetail),
-    ).subscribe()
+    const subscription = showingDetail$.pipe(distinctUntilChanged(), tap(setShowingDetail)).subscribe()
     return () => subscription.unsubscribe()
   }, [])
 
@@ -166,7 +138,7 @@ const useShowingDetail$ = (): BehaviorSubject<boolean> => {
 }
 
 interface ViewResultsProps {
-  results: Result[];
+  results: Result[]
 }
 
 const ViewResults = memo((props: ViewResultsProps) => {
@@ -178,22 +150,12 @@ const ViewResults = memo((props: ViewResultsProps) => {
         <List.Item
           key={item.id}
           id={item.id}
-          icon={
-            item.isPhonetic
-              ? 'translate-say.png'
-              : 'translate.png'
-          }
+          icon={item.isPhonetic ? 'translate-say.png' : 'translate.png'}
           title={item.title}
           subtitle={item.subtitle}
-          detail={
-            <List.Item.Detail
-              markdown={getDetailMarkdown(item)}
-            />
-          }
+          detail={<List.Item.Detail markdown={getDetailMarkdown(item)} />}
           actions={
-            <ActionContextPanel
-              item={item}
-            >
+            <ActionContextPanel item={item}>
               <ListItemActions />
             </ActionContextPanel>
           }

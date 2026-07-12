@@ -1,28 +1,19 @@
 import got from 'got'
-import {
-  type Adapter,
-  type AdapterPlatform,
-  type Result,
-  adapters,
-} from '../adapters'
-import {
-  toSpaceCase,
-} from '../utils'
-import type {
-  HistoryManager,
-} from './history'
+import { type Adapter, type AdapterPlatform, type Result, adapters } from '../adapters'
+import { toSpaceCase } from '../utils'
+import type { HistoryManager } from './history'
 
 /** Injectable HTTP getter so the translate/dict pipeline is unit-testable without network. */
 export type RequestFn = (url: string) => Promise<unknown>
 
-const defaultRequest: RequestFn = url => got.get(url).json()
+const defaultRequest: RequestFn = (url) => got.get(url).json()
 
 /** Inputs longer than this are treated as sentences; dict lookup is skipped. */
 const MAX_DICT_INPUT_LENGTH = 45
 
 interface TranslatorType {
-  adapter: Adapter;
-  translate: (word: string) => Promise<Result[]>;
+  adapter: Adapter
+  translate: (word: string) => Promise<Result[]>
 }
 
 export class Translator implements TranslatorType {
@@ -31,18 +22,22 @@ export class Translator implements TranslatorType {
   private historyManager: HistoryManager
   private request: RequestFn
 
-  constructor({ key, secret, platform, historyManager, request = defaultRequest }: {
-    key: string;
-    secret: string;
-    platform: AdapterPlatform;
-    historyManager: HistoryManager;
-    request?: RequestFn;
+  constructor({
+    key,
+    secret,
+    platform,
+    historyManager,
+    request = defaultRequest,
+  }: {
+    key: string
+    secret: string
+    platform: AdapterPlatform
+    historyManager: HistoryManager
+    request?: RequestFn
   }) {
     const platformAdapters = adapters[platform]
     this.adapter = new platformAdapters.translate(key, secret)
-    this.dictAdapter = platformAdapters.dict
-      ? new platformAdapters.dict(key, secret)
-      : undefined
+    this.dictAdapter = platformAdapters.dict ? new platformAdapters.dict(key, secret) : undefined
     this.historyManager = historyManager
     this.request = request
   }
@@ -81,7 +76,7 @@ export class Translator implements TranslatorType {
 
   public getHistory(): Result[] {
     const queryItems = this.historyManager.getList()
-    return queryItems.map(item => item.result)
+    return queryItems.map((item) => item.result)
   }
 
   public updateHistoryItem(query: string, result?: Result): void {

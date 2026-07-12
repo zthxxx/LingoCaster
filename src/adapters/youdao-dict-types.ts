@@ -20,82 +20,82 @@ export interface DictTr {
        * For `ec` (English→Chinese), `i[0]` is the full POS string, e.g. "adj. 优良的…".
        * For `ce` (Chinese→English), the objects hold the English word in `#text`.
        */
-      i?: Array<string | DictTextLink>;
+      i?: Array<string | DictTextLink>
       /** part of speech, e.g. "n." / "adj." (present in `ce`). */
-      pos?: string;
+      pos?: string
       /** Chinese gloss (present in `ce`). */
-      '#tran'?: string;
-    };
-  }>;
+      '#tran'?: string
+    }
+  }>
 }
 
 export interface DictTextLink {
-  '#text'?: string;
-  '@href'?: string;
-  '@action'?: string;
+  '#text'?: string
+  '@href'?: string
+  '@action'?: string
 }
 
 /** word form, e.g. { name: "复数", value: "goods" }. */
 export interface WordForm {
   wf?: {
-    name?: string;
-    value?: string;
-  };
+    name?: string
+    value?: string
+  }
 }
 
 /** English → Chinese dictionary. */
 export interface Ec {
-  exam_type?: string[];
+  exam_type?: string[]
   word?: Array<{
-    usphone?: string;
-    ukphone?: string;
-    usspeech?: string;
-    ukspeech?: string;
-    trs?: DictTr[];
-    wfs?: WordForm[];
-    'return-phrase'?: unknown;
-  }>;
+    usphone?: string
+    ukphone?: string
+    usspeech?: string
+    ukspeech?: string
+    trs?: DictTr[]
+    wfs?: WordForm[]
+    'return-phrase'?: unknown
+  }>
 }
 
 /** Chinese → English dictionary. */
 export interface Ce {
   word?: Array<{
     /** pinyin, e.g. "měi". */
-    phone?: string;
-    trs?: DictTr[];
-    'return-phrase'?: unknown;
-  }>;
+    phone?: string
+    trs?: DictTr[]
+    'return-phrase'?: unknown
+  }>
 }
 
 export interface WebTranslation {
   /** "true" when this entry's key equals the query word. */
-  '@same'?: string;
-  key: string;
+  '@same'?: string
+  key: string
   trans?: Array<{
-    value?: string;
-    summary?: { line?: string[] };
-    support?: number;
-  }>;
+    value?: string
+    summary?: { line?: string[] }
+    support?: number
+  }>
 }
 
 export interface WebTrans {
-  'web-translation'?: WebTranslation[];
+  'web-translation'?: WebTranslation[]
 }
 
 export interface Meta {
-  input?: string;
+  input?: string
   /** "eng" / "zh" — youdao's language guess. */
-  guessLanguage?: string;
-  le?: string;
-  lang?: string;
+  guessLanguage?: string
+  le?: string
+  lang?: string
 }
 
 export interface YoudaoWebDictionaryModel {
-  input?: string;
-  lang?: string;
-  le?: string;
-  meta?: Meta;
-  ec?: Ec;
-  ce?: Ce;
-  web_trans?: WebTrans;
+  input?: string
+  lang?: string
+  le?: string
+  meta?: Meta
+  ec?: Ec
+  ce?: Ce
+  web_trans?: WebTrans
 }

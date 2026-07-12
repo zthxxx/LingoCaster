@@ -1,14 +1,6 @@
-import {
-  sha256,
-  detectLanguage,
-  Language,
-} from '../utils'
+import { sha256, detectLanguage, Language } from '../utils'
 import type { Adapter, Result } from './adapter'
-import {
-  type YoudaoAPIData,
-  parseError,
-  parseTranslation,
-} from './youdao-parse'
+import { type YoudaoAPIData, parseError, parseTranslation } from './youdao-parse'
 
 export type { YoudaoAPIData } from './youdao-parse'
 
@@ -36,9 +28,7 @@ export class Youdao implements Adapter {
 
     const truncateInput = (text: string): string => {
       const len = text.length
-      return len <= 20
-        ? text
-        : `${text.substring(0, 10)}${len}${text.substring(len - 10, len)}`
+      return len <= 20 ? text : `${text.substring(0, 10)}${len}${text.substring(len - 10, len)}`
     }
 
     const sign = sha256(`${this.key}${truncateInput(input)}${salt}${timestamp}${this.secret}`)
@@ -54,7 +44,6 @@ export class Youdao implements Adapter {
       signType: 'v3',
       curtime: timestamp,
     })
-
 
     return `https://openapi.youdao.com/api?${params.toString()}`
   }

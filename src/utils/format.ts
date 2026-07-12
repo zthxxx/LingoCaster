@@ -1,4 +1,3 @@
-
 import SuperExpressive from 'super-expressive'
 import { noCase } from 'change-case'
 
@@ -12,45 +11,41 @@ import { noCase } from 'change-case'
  */
 export const toSpaceCase = (text: string): string => {
   const stripRegexp = SuperExpressive()
-    .allowMultipleMatches
-    .anyOf
-      .char('_')
+    .allowMultipleMatches.anyOf.char('_')
 
-      .group
-        .assertBehind
-          .anyOf.range('A', 'Z').range('a', 'z').end()
-        .end()
-        .oneOrMore.anyOfChars('-.:')
-        .assertAhead
-          .anyOf.range('A', 'Z').range('a', 'z').end()
-        .end()
-      .end()
+    .group.assertBehind.anyOf.range('A', 'Z')
+    .range('a', 'z')
+    .end()
+    .end()
+    .oneOrMore.anyOfChars('-.:')
+    .assertAhead.anyOf.range('A', 'Z')
+    .range('a', 'z')
+    .end()
+    .end()
+    .end()
 
-      .group
-        .assertBehind
-          .anyOf.range('A', 'Z').range('a', 'z').end()
-        .end()
-        .oneOrMore.anyOfChars('-:')
-        .assertAhead.digit.end()
-      .end()
+    .group.assertBehind.anyOf.range('A', 'Z')
+    .range('a', 'z')
+    .end()
+    .end()
+    .oneOrMore.anyOfChars('-:')
+    .assertAhead.digit.end()
+    .end()
 
-      .group
-        .assertBehind.digit.end()
-        .oneOrMore.anyOfChars('-:')
-        .assertAhead
-          .anyOf.range('A', 'Z').range('a', 'z').end()
-        .end()
-      .end()
+    .group.assertBehind.digit.end()
+    .oneOrMore.anyOfChars('-:')
+    .assertAhead.anyOf.range('A', 'Z')
+    .range('a', 'z')
+    .end()
+    .end()
+    .end()
     .end()
     .toRegex()
 
-  const result = noCase(
-    text,
-    {
-      stripRegexp,
-      transform: text => text,
-    },
-  )
+  const result = noCase(text, {
+    stripRegexp,
+    transform: (text) => text,
+  })
 
   return result
 }

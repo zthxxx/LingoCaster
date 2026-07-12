@@ -2,12 +2,7 @@ import fc from 'fast-check'
 import goodFixture from './__fixtures__/youdao-dict.good.json'
 import meiFixture from './__fixtures__/youdao-dict.mei.json'
 import type { YoudaoWebDictionaryModel } from './youdao-dict-types'
-import {
-  MAX_WEB_RESULTS,
-  YoudaoDict,
-  dictLanguageCode,
-  mapToBasicWeb,
-} from './youdao-dict'
+import { MAX_WEB_RESULTS, YoudaoDict, dictLanguageCode, mapToBasicWeb } from './youdao-dict'
 
 const good = goodFixture as unknown as YoudaoWebDictionaryModel
 const mei = meiFixture as unknown as YoudaoWebDictionaryModel
@@ -20,9 +15,11 @@ describe('dictLanguageCode', () => {
   })
 
   test('property: always returns en or ja', () => {
-    fc.assert(fc.property(fc.string(), (input) => {
-      expect(['en', 'ja']).toContain(dictLanguageCode(input))
-    }))
+    fc.assert(
+      fc.property(fc.string(), (input) => {
+        expect(['en', 'ja']).toContain(dictLanguageCode(input))
+      }),
+    )
   })
 })
 
@@ -39,11 +36,13 @@ describe('YoudaoDict.url', () => {
   })
 
   test('property: q round-trips through url encoding', () => {
-    fc.assert(fc.property(fc.string({ minLength: 1 }), (input) => {
-      const url = new YoudaoDict().url(input)
-      const query = new URLSearchParams(url.split('?')[1])
-      expect(query.get('q')).toBe(input)
-    }))
+    fc.assert(
+      fc.property(fc.string({ minLength: 1 }), (input) => {
+        const url = new YoudaoDict().url(input)
+        const query = new URLSearchParams(url.split('?')[1])
+        expect(query.get('q')).toBe(input)
+      }),
+    )
   })
 })
 
@@ -97,7 +96,7 @@ describe('mapToBasicWeb', () => {
     }
     const { web } = mapToBasicWeb(model)
     expect(web).toHaveLength(MAX_WEB_RESULTS)
-    expect(web.map(item => item.key)).toEqual(['w1', 'w2', 'w3', 'w4'])
+    expect(web.map((item) => item.key)).toEqual(['w1', 'w2', 'w3', 'w4'])
   })
 
   test('drops web entries missing a key', () => {
@@ -123,10 +122,10 @@ describe('YoudaoDict.parse', () => {
     const results = adapter.parse(good)
     // 4 explains + 1 phonetic + MAX_WEB_RESULTS web
     expect(results).toHaveLength(4 + 1 + MAX_WEB_RESULTS)
-    expect(results.filter(r => r.isPhonetic)).toHaveLength(1)
+    expect(results.filter((r) => r.isPhonetic)).toHaveLength(1)
     // explain rows keep the queried word as subtitle
     expect(results[0].subtitle).toBe('good')
-    expect(results.every(r => r.id.length > 0)).toBe(true)
+    expect(results.every((r) => r.id.length > 0)).toBe(true)
   })
 
   test('chinese word -> english explains pronounce-able', () => {
@@ -148,7 +147,7 @@ describe('YoudaoDict.parse', () => {
     // ce response => zh->en => explain rows pronounce the English head word, not the input
     expect(results[0].pronounce).toBe('beauty')
     // and the pinyin phonetic row has a non-empty title (not dropped to '')
-    const phonetic = results.find(r => r.isPhonetic)!
+    const phonetic = results.find((r) => r.isPhonetic)!
     expect(phonetic.title.length).toBeGreaterThan(0)
     expect(phonetic.title).toContain('měi')
   })
@@ -156,15 +155,22 @@ describe('YoudaoDict.parse', () => {
   test('sentence-like model (no ec/ce) -> [] even if web_trans present', () => {
     const adapter = new YoudaoDict()
     adapter.url('a long sentence here')
-    expect(adapter.parse({ input: 'a long sentence here', web_trans: { 'web-translation': [{ key: 'x', trans: [{ value: 'y' }] }] } })).toEqual([])
+    expect(
+      adapter.parse({
+        input: 'a long sentence here',
+        web_trans: { 'web-translation': [{ key: 'x', trans: [{ value: 'y' }] }] },
+      }),
+    ).toEqual([])
   })
 
   test('property: parse never throws on arbitrary / partial models', () => {
     const adapter = new YoudaoDict()
     adapter.url('x')
-    fc.assert(fc.property(fc.anything(), (model) => {
-      const results = adapter.parse(model as YoudaoWebDictionaryModel)
-      expect(Array.isArray(results)).toBe(true)
-    }))
+    fc.assert(
+      fc.property(fc.anything(), (model) => {
+        const results = adapter.parse(model as YoudaoWebDictionaryModel)
+        expect(Array.isArray(results)).toBe(true)
+      }),
+    )
   })
 })

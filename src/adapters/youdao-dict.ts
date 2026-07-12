@@ -1,20 +1,7 @@
-import {
-  detectLanguage,
-  Language,
-} from '../utils'
+import { detectLanguage, Language } from '../utils'
 import type { Adapter, Result } from './adapter'
-import {
-  type ParseContext,
-  type YoudaoAPIData,
-  parseBasic,
-  parseWeb,
-} from './youdao-parse'
-import type {
-  DictTextLink,
-  DictTr,
-  WebTranslation,
-  YoudaoWebDictionaryModel,
-} from './youdao-dict-types'
+import { type ParseContext, type YoudaoAPIData, parseBasic, parseWeb } from './youdao-parse'
+import type { DictTextLink, DictTr, WebTranslation, YoudaoWebDictionaryModel } from './youdao-dict-types'
 
 /** Keep the result list concise (LingoCaster favors speed over exhaustiveness). */
 export const MAX_WEB_RESULTS = 4
@@ -22,7 +9,7 @@ export const MAX_WEB_RESULTS = 4
 /** Youdao web dict `dicts` param: request only the sub-dictionaries we render. */
 const DICTS_PARAM = JSON.stringify({ count: 99, dicts: [['ec', 'ce', 'web_trans']] })
 
-const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? value as T[] : [])
+const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : [])
 
 /**
  * Youdao web dictionary `le` (target language) code.
@@ -36,8 +23,8 @@ export function dictLanguageCode(input: string): string {
 function extractEnglish(tr: DictTr): string {
   return asArray<string | DictTextLink>(tr?.tr?.[0]?.l?.i)
     .filter((item): item is DictTextLink => typeof item === 'object' && item !== null)
-    .map(item => item['#text'] ?? '')
-    .filter(text => text.length > 0)
+    .map((item) => item['#text'] ?? '')
+    .filter((text) => text.length > 0)
     .join(' ')
 }
 
@@ -50,8 +37,8 @@ function extractEnglish(tr: DictTr): string {
  *   pinyin phonetic.
  */
 export function mapToBasicWeb(model: YoudaoWebDictionaryModel): {
-  basic: YoudaoAPIData['basic'] | null;
-  web: YoudaoAPIData['web'];
+  basic: YoudaoAPIData['basic'] | null
+  web: YoudaoAPIData['web']
 } {
   const ecWord = model?.ec?.word?.[0]
   const ceWord = model?.ce?.word?.[0]
@@ -60,12 +47,12 @@ export function mapToBasicWeb(model: YoudaoWebDictionaryModel): {
 
   if (ecWord) {
     const explains = asArray<DictTr>(ecWord.trs)
-      .map(tr => tr?.tr?.[0]?.l?.i?.[0])
+      .map((tr) => tr?.tr?.[0]?.l?.i?.[0])
       .filter((item): item is string => typeof item === 'string' && item.length > 0)
     const us = ecWord.usphone ?? ''
     const uk = ecWord.ukphone ?? ''
     basic = {
-      'phonetic': us || uk, // non-empty enables the phonetic row; display uses us/uk
+      phonetic: us || uk, // non-empty enables the phonetic row; display uses us/uk
       'us-phonetic': us,
       'uk-phonetic': uk,
       explains,
@@ -73,9 +60,9 @@ export function mapToBasicWeb(model: YoudaoWebDictionaryModel): {
   } else if (ceWord) {
     const explains = asArray<DictTr>(ceWord.trs)
       .map(extractEnglish)
-      .filter(text => text.length > 0)
+      .filter((text) => text.length > 0)
     basic = {
-      'phonetic': ceWord.phone ?? '',
+      phonetic: ceWord.phone ?? '',
       'us-phonetic': '',
       'uk-phonetic': '',
       explains,
@@ -83,11 +70,11 @@ export function mapToBasicWeb(model: YoudaoWebDictionaryModel): {
   }
 
   const web: YoudaoAPIData['web'] = asArray<WebTranslation>(model?.web_trans?.['web-translation'])
-    .map(entry => ({
+    .map((entry) => ({
       key: entry?.key,
       value: asArray<{ value?: string }>(entry?.trans)
-        .map(trans => trans?.value ?? '')
-        .filter(value => value.length > 0),
+        .map((trans) => trans?.value ?? '')
+        .filter((value) => value.length > 0),
     }))
     // drop entries without a key or values BEFORE capping, so the cap counts only real rows
     .filter((item): item is { key: string; value: string[] } => Boolean(item.key) && item.value.length > 0)
@@ -127,9 +114,6 @@ export class YoudaoDict implements Adapter {
     const isChinese = Boolean(ceWord) && !ecWord
     const ctx: ParseContext = { word: this.word, isChinese }
     const { basic, web } = mapToBasicWeb(data)
-    return [
-      ...(basic ? parseBasic(basic, ctx) : []),
-      ...parseWeb(web, ctx),
-    ]
+    return [...(basic ? parseBasic(basic, ctx) : []), ...parseWeb(web, ctx)]
   }
 }
