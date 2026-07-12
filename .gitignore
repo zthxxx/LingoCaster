@@ -3,10 +3,17 @@
 # dependencies
 /node_modules
 
+# build output
+/dist
+
 # misc
 .DS_Store
 
+# local secrets for integration tests (never commit / never publish)
+.env
+.env.test
 *.local
+.*.local
 
 .*.ts
 .*.mts

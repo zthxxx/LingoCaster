@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# https://commitlint.js.org/#/reference-cli
+npx --no -- commitlint --config .github/commitlintrc.yml --edit "$1"

@@ -3,6 +3,8 @@
   <h1 align="center">LingoCaster</h1>
 </p>
 
+[English](./README.md) | 简体中文
+
 ## LingoCaster
 
 `LingoCaster` 是一款 [Raycast](https://www.raycast.com) 上的查词翻译插件。
@@ -12,7 +14,7 @@
 比起 Raycast Easydict 插件更快，体验更符合**中文用户**操作习惯。
 
 
-<img alt="Preview" src="./metadata/preview.webp" />
+<img alt="Preview" src="./media/preview.webp" />
 
 ### 快捷键
 - `Command(⌘)` + `Space(␣)` _(可自定义)_ => 唤起翻译查询输入框
@@ -25,10 +27,26 @@
 ### Trick
 - 对 中文/英文 查询中，发音均自动读取英语目标，
   即 `中->英` 的翻译英文结果，`英->中` 中的英文输入
-- 查询结构中的音标项上 `Enter(↩︎)` => 本地语音发音
+- 查询结果中的音标项上 `Enter(↩︎)` => 本地语音发音
 - 对 `CamelCase` / `snake_case` / `kebab-case` 自动切分后翻译
 - 长句结果自动展开详情显示
 - 输入 `*` 将展示历史查询记录
+
+
+## 配置密钥
+
+LingoCaster 使用你自己的密钥调用有道文本翻译 API，需要一个（免费的）有道智云应用：
+
+1. 前往 [有道智云](https://ai.youdao.com) 注册并进入控制台
+2. 创建应用，并开通 **文本翻译（自然语言翻译）** 服务
+3. 复制该应用的 `应用ID` 与 `应用秘钥`
+4. 首次运行命令时，Raycast 会弹出插件偏好设置（Preferences），按下表填入：
+
+| 偏好项 | 说明 |
+| --- | --- |
+| Translator Platform App | 翻译平台，默认 `Youdao` |
+| App Auth Key | 有道智云应用的 `应用ID` |
+| App Secret Key | 有道智云应用的 `应用秘钥` |
 
 
 ## Development 开发安装
@@ -39,7 +57,6 @@
 
 - macOS 上已安装 [Raycast](https://www.raycast.com)，并登录 Raycast 账号（首次运行开发模式会引导登录 / 开启 Developer Mode）
 - [Node.js](https://nodejs.org) ≥ 20
-- [pnpm](https://pnpm.io)（本仓库使用 pnpm 管理依赖）
 
 ### 安装步骤
 
@@ -49,36 +66,26 @@ git clone https://github.com/zthxxx/LingoCaster.git
 cd LingoCaster
 
 # 2. 安装依赖
-pnpm install --frozen-lockfile
+npm install
 
 # 3. 启动开发模式（内部执行 `ray develop`）
-pnpm dev
+npm run dev
 ```
 
-`pnpm dev` 会构建插件并导入到 Raycast，保持终端运行即为热重载状态，改动源码会自动刷新。此时唤起 Raycast 即可看到 `Translate` 与 `Translate with Select` 两个命令。按 `Ctrl + C` 结束开发模式。
-
-### 配置 API 密钥
-
-首次运行命令时，Raycast 会要求填写插件偏好设置（Preferences）：
-
-| 偏好项 | 说明 |
-| --- | --- |
-| Translator Platform App | 翻译平台，默认 `Youdao` |
-| App Auth Key | 有道智云应用的 `APP_KEY` |
-| App Secret Key | 有道智云应用的 `APP_SECRET` |
-
-`APP_KEY` / `APP_SECRET` 需到 [有道智云](https://ai.youdao.com) 注册应用（自然语言翻译服务）后获取。
+`npm run dev` 会构建插件并导入到 Raycast，保持终端运行即为热重载状态，改动源码会自动刷新。此时唤起 Raycast 即可看到 `Translate` 与 `Translate Selection` 两个命令。按 `Ctrl + C` 结束开发模式。
 
 ### 其他脚本
 
 ```bash
-pnpm build      # 构建产物到 dist
-pnpm lint       # 代码检查（lint:fix 自动修复）
-pnpm test       # 运行单元测试
+npm run build      # 构建产物到 dist
+npm run lint       # ray lint（eslint + prettier + manifest 校验）
+npm run test       # 运行单元测试
+npm run typecheck  # tsc --noEmit
 ```
 
-> 运行 `pnpm test` 中的有道翻译联网集成测试时，密钥从 `.env.local` 读取（而非 Raycast 偏好设置），缺失时该用例自动跳过。
-> 可复制 `.env.local.template` 为 `.env.local` 并填入 `APP_KEY` / `APP_SECRET`。
+> 运行 `npm run test` 中的有道翻译联网集成测试时，密钥从本地 `.env.test` 文件读取
+> （而非 Raycast 偏好设置），缺失时该用例自动跳过；
+> `.env.test` 已被 git 忽略，内容为 `APP_PLATFORM` / `APP_KEY` / `APP_SECRET` 三个变量
 
 
 ## Credits

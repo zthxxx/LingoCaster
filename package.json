@@ -1,65 +1,39 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "lingo-caster",
-  "version": "1.0.0",
   "title": "LingoCaster",
-  "description": "Elegant translation tool for raycast, same of Alfred YoudaoTranslator",
+  "description": "Elegant Chinese-English translation and dictionary lookup powered by Youdao",
   "icon": "command-icon.png",
   "author": "zthxxx",
+  "categories": [
+    "Productivity"
+  ],
   "license": "MIT",
-  "scripts": {
-    "build": "ray build -e dist",
-    "dev": "ray develop",
-    "lint": "eslint --format codeframe .",
-    "lint:fix": "eslint --format codeframe . --fix",
-    "test": "vitest run --passWithNoTests",
-    "typecheck": "tsc --noEmit",
-    "publish": "ray publish",
-    "prepare": "husky"
-  },
-  "dependencies": {
-    "@raycast/api": "^1.104.18",
-    "change-case": "4.1.2",
-    "dedent": "1.5.1",
-    "execa": "8.0.1",
-    "got": "^12.6.0",
-    "nanoid": "5.0.7",
-    "rxjs": "7.8.1",
-    "string-width": "7.1.0",
-    "super-expressive": "2.0.0",
-    "ts-pattern": "5.1.1"
-  },
-  "devDependencies": {
-    "@antfu/eslint-config": "2.13.2",
-    "@antfu/eslint-config-react": "0.43.1",
-    "@commitlint/cli": "21.0.1",
-    "@commitlint/config-conventional": "21.0.1",
-    "@raycast/eslint-config": "2.1.1",
-    "@types/dedent": "0.7.2",
-    "@types/node": "20.12.7",
-    "@types/react": "18.2.75",
-    "@zthxxx/tsconfig": "1.0.3",
-    "dotenv": "16.4.5",
-    "eslint": "9.39.1",
-    "eslint-formatter-codeframe": "7.32.1",
-    "fast-check": "4.8.0",
-    "husky": "9.1.7",
-    "prettier": "3.2.5",
-    "type-fest": "4.15.0",
-    "typescript": "5.4.4",
-    "vitest": "4.1.7"
-  },
+  "platforms": [
+    "macOS"
+  ],
+  "files": [
+    "assets",
+    "metadata",
+    "media",
+    "src",
+    "CHANGELOG.md",
+    "tsconfig.json",
+    "eslint.config.mjs",
+    ".prettierrc",
+    ".prettierignore"
+  ],
   "commands": [
     {
       "name": "translate",
       "title": "Translate",
-      "description": "Elegant translation tool",
+      "description": "Translate words and sentences between Chinese and English",
       "mode": "view"
     },
     {
       "name": "translate-selection",
-      "title": "Translate with Select",
-      "description": "Translation with selection or clipboard text",
+      "title": "Translate Selection",
+      "description": "Translate the selected or clipboard text",
       "mode": "view"
     }
   ],
@@ -81,16 +55,53 @@
     {
       "title": "App Auth Key",
       "name": "APP_KEY",
-      "description": "Your Translate App Auth Key",
+      "description": "Your translator platform app auth key",
       "type": "textfield",
       "required": true
     },
     {
       "title": "App Secret Key",
       "name": "APP_SECRET",
-      "description": "Your Translate App Secret Key",
+      "description": "Your translator platform app secret key",
       "type": "textfield",
       "required": true
     }
-  ]
+  ],
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "lint": "ray lint",
+    "fix-lint": "ray lint --fix",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit",
+    "publish": "node .github/scripts/publish.mjs",
+    "prepare": "husky .github/husky || true"
+  },
+  "dependencies": {
+    "@raycast/api": "^1.104.22",
+    "change-case": "4.1.2",
+    "dedent": "1.5.1",
+    "execa": "8.0.1",
+    "got": "^12.6.0",
+    "nanoid": "5.0.7",
+    "rxjs": "7.8.1",
+    "string-width": "7.1.0",
+    "super-expressive": "2.0.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.0.1",
+    "@commitlint/config-conventional": "21.0.1",
+    "@raycast/eslint-config": "2.1.1",
+    "@types/node": "22.19.17",
+    "@types/react": "19.0.10",
+    "@zthxxx/tsconfig": "1.0.3",
+    "dotenv": "16.4.5",
+    "eslint": "9.39.1",
+    "fast-check": "4.8.0",
+    "husky": "9.1.7",
+    "prettier": "3.2.5",
+    "type-fest": "4.15.0",
+    "typescript": "5.4.4",
+    "vitest": "4.1.7"
+  }
 }
