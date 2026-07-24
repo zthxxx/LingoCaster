@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { List } from '@raycast/api'
 import {
   debounceTime,
@@ -66,7 +66,7 @@ export const TranslateView = memo((props: TranslateParams) => {
       searchText={inputText$.value}
       searchBarPlaceholder='Search for translate ...'
       isShowingDetail={showingDetail.value && !!results.length}
-      onSearchTextChange={inputText$.next}
+      onSearchTextChange={inputText$.onSearchTextChange}
       onSelectionChange={(id) => {
         const item = itemsMap.get(id!)
         if (!item) return
@@ -96,7 +96,7 @@ const useInputText$ = ({
 }: {
   initInput?: string
   pipeline: (inputText$: Observable<string>) => Observable<unknown>
-}): BehaviorSubject<string> & { next: (params: string) => void } => {
+}): BehaviorSubject<string> & { next: (params: string) => void; onSearchTextChange: (text: string) => void } => {
   const [, setInputText] = useState('')
   const inputText$ = useMemo(() => new BehaviorSubject(''), [])
 
@@ -112,17 +112,35 @@ const useInputText$ = ({
     return () => subscription.unsubscribe()
   }, [])
 
-  // initInput arrives async (selection / clipboard readout);
-  // apply it only while the user hasn't typed anything yet
+  // initInput arrives async and possibly twice (clipboard fallback first,
+  // then the retried selection readout); apply it while the input is still
+  // empty or still exactly the previous programmatic fill — never over
+  // anything the user has typed or edited
+  const lastInitRef = useRef('')
+  const lastFillAtRef = useRef(0)
   useEffect(() => {
     const init = (initInput ?? '').trim()
-    if (init && !inputText$.value) {
+    if (init && (!inputText$.value || inputText$.value === lastInitRef.current)) {
+      lastInitRef.current = init
+      lastFillAtRef.current = Date.now()
       inputText$.next(init)
     }
   }, [initInput])
 
+  // Raycast's native search bar fires its initial onSearchTextChange('')
+  // asynchronously after mount; when the selection readout is fast our
+  // programmatic fill lands first and that stale empty echo would wipe it.
+  // Discard an empty change arriving hard on the heels of an auto fill —
+  // a human cannot clear the field within half a second of it appearing
+  const onSearchTextChange = (text: string): void => {
+    if (!text && inputText$.value && Date.now() - lastFillAtRef.current < 500) {
+      return
+    }
+    inputText$.next(text)
+  }
+
   inputText$.next = inputText$.next.bind(inputText$)
-  return inputText$
+  return Object.assign(inputText$, { onSearchTextChange })
 }
 
 const useShowingDetail$ = (): BehaviorSubject<boolean> => {

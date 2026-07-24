@@ -10,26 +10,60 @@ interface Preferences {
   APP_PLATFORM: AdapterPlatform
 }
 
+const attemptSelection = (): Promise<string> => getSelectedText().then((text) => text.trim())
+
+const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
 /**
- * capture at module load — the command entry evaluates right at launch,
+ * first capture at module load — the command entry evaluates right at launch,
  * before first render, while the frontmost app's selection is still intact;
  * getSelectedText may resolve '' (not reject) when nothing is selected
  */
-const selectionAtLaunch: Promise<string> = getSelectedText()
-  .then((text) => text.trim())
-  .catch(() => '')
+const selectionFirstAttempt: Promise<string> = attemptSelection()
 
 /**
- * initial text priority: selection > clipboard > empty
+ * keep retrying on rejection: Chromium browsers build their accessibility
+ * tree lazily and only on-demand — Raycast's query is what triggers the
+ * build, but on heavy pages the build outlasts Raycast's own ~600ms wait,
+ * so the first getSelectedText rejects even though text is selected;
+ * retries land once the tree is up (measured: attempt 2 at ~900ms on a
+ * 20k-node page). External wake-ups don't work on modern Chrome
+ * (AXManualAccessibility is Electron-only, AXEnhancedUserInterface is
+ * NotImplemented), so retrying the native call is the only reliable path
  */
-const readInitialText = async (): Promise<string> => {
-  const selected = await selectionAtLaunch
-  if (selected) return selected
+const selectionRetried: Promise<string> = (async () => {
+  const deadline = Date.now() + 5_000
+  let attempt = selectionFirstAttempt
+  while (true) {
+    try {
+      return await attempt
+    } catch {
+      if (Date.now() > deadline) return ''
+      await delay(250)
+      attempt = attemptSelection()
+    }
+  }
+})()
 
-  return await Clipboard.readText()
-    .then((text) => text?.trim() ?? '')
+/**
+ * a clipboard holding a file/image yields only a placeholder description
+ * as text (e.g. "Image (1207x353)") — not translatable, skip it
+ */
+const readClipboardText = (): Promise<string> =>
+  Clipboard.read()
+    .then(({ text, file }) => (file ? '' : text?.trim() ?? ''))
     .catch(() => '')
-}
+
+/**
+ * fast initial text, priority: selection (first attempt) > clipboard > empty;
+ * don't await the selection retries here — while they run, the input gets the
+ * clipboard fallback immediately, and upgrades once a retry lands (see below)
+ */
+const readInitialText = (): Promise<string> =>
+  selectionFirstAttempt.then(
+    (selected) => selected || readClipboardText(),
+    () => readClipboardText(),
+  )
 
 export const ViewWithSection = memo(() => {
   const [selected, setSelected] = useState<string | undefined>(undefined)
@@ -49,6 +83,11 @@ export const ViewWithSection = memo(() => {
 
   useEffect(() => {
     readInitialText().then(setSelected)
+    // upgrade to the real selection once a retry lands;
+    // TranslateView only applies it while the user hasn't typed
+    selectionRetried.then((selected) => {
+      if (selected) setSelected(selected)
+    })
   }, [])
 
   return <TranslateView selected={selected} translator={translator} />
